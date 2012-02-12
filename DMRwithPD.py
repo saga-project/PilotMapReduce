@@ -221,6 +221,7 @@ class MapReduce:
     #submit the reduce jobs.
     
     def reduce_jobs(self):
+        time.sleep(100)
         # start compute unit
         jobs=[]
         job_start_times = {}
