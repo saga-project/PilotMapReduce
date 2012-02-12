@@ -26,25 +26,6 @@ def remote_files(base_dir, url):
     del(js)
     return remote_file_lists
 
-    """def wait_for_all_DUs(dus, poll_intervall=5):
-     waits for all dus that are in list to terminate 
-    while 1:
-        finish_counter=0
-        result_map = {}
-        number_of_dus = len(dus)
-        for i in range(0, number_of_dus):
-            state = dus[i].get_state()
-            if state == State.Running:
-                finish_counter = finish_counter + 1
-            print "data units still running - " + str(finish_counter)
-        if finish_counter == number_of_dus:
-            break
-        time.sleep(poll_intervall)
-    return 0"""
-    
-    def wait_for_all_DUs(dus, poll_intervall=5):
-        dus.wait()
-        
 class MapReduce:
 
     def __init__(self,pilots,nbr_reduces,pro_subjob,advert_host,chunk_type):
@@ -146,8 +127,8 @@ class MapReduce:
                 "total_core_count": 1,
                 "number_of_processes": self.pro_subjob,
                 "working_directory": temp_dir,
-                "output": pilot['working_directory']  + "/stdout"+ str(i) +"-" + str(j)+".txt",
-                "error": pilot['working_directory'] + "/stderr"+ str(i) +"-" + str(j)+".txt",
+                "output": "stdout"+ str(i) +"-" + str(j)+".txt",
+                "error": "stderr"+ str(i) +"-" + str(j)+".txt",
                 "affinity_datacenter_label": affinity_datacenter_label,              
                 "affinity_machine_label": affinity_machine_label 
                 }    
@@ -163,7 +144,8 @@ class MapReduce:
         ############################################################################################
         
         
-
+        #Get the list of all map output files on all the machines.
+        
         sorted_part_file_list = []
         for pilot in pilots:
             service_url = pilot['service_url']
@@ -174,30 +156,30 @@ class MapReduce:
             sorted_partion_files = filter( lambda x: 'sorted-part' in x, remote_file_list)
             # add ssh url to the map files. used by pilot data.
             sorted_part_file_list.append( map(lambda i:str(map_url) +"/"+ i, sorted_partion_files ) )
-            #print "*********************sorted part file list*************************" 
-            #print sorted_part_file_list
+
+
         for map_sorted_part_file_list in sorted_part_file_list:
             self.comb_map_sorted_part_file_list =  self.comb_map_sorted_part_file_list + map_sorted_part_file_list
-            
-        #print "************ Combined list of files ****************"
-        #print self.comb_map_sorted_part_file_list
 
+    #Group map files related to a single reduce
     def group_map_files(self):
         for i in range(int(self.nbr_reduces)):
             self.du_files.append( filter(lambda k: k.split("-")[-1] == str(i) ,self.comb_map_sorted_part_file_list) )
  
 
+    #distributed reduces and its corresponding files to all machines equally.
     def split_pd(self):
         if self.nbr_reduces%len(self.pilots) != 0:
             dist = self.nbr_reduces/len(self.pilots) + 1
         else:
             dist = self.nbr_reduces/len(self.pilots)
         self.du_files = [ self.du_files[i:i+dist] for i in range(0, len(self.du_files), dist )]
-        print "*********************************************************************************"
+        print "********ALL DU FILES********************************************************************"
         print self.du_files
         print "*********************************************************************************"
         
 
+    #start pilot datas on all the machines where intermediate data will be stored.
     def start_pilot_datas(self):
         for pilot in self.pilots:
             service_url = pilot['service_url']
@@ -213,6 +195,7 @@ class MapReduce:
             ps = self.pilot_data_service.create_pilot( pilot_data_description=pd_desc )
         self.compute_data_service.add_pilot_data_service(self.pilot_data_service)
 
+    #submit data units to the pilot datas
     def create_pilot_descs(self):
         i=0
         for machine_du in self.du_files:
@@ -223,13 +206,20 @@ class MapReduce:
                                           "affinity_machine_label": self.pilots[i]['affinity_machine_label']
                                         }
                 data_unit = self.compute_data_service.submit_data_unit(data_unit_description)
+                print "**********DDDDAATTAAA*****************- data_unit_description - " +str(i) + "***********************************"
+                print data_unit_description
+                print "*****************************************************************************************"  
+                
+                
                 self.dus.append(data_unit)
             i=i+1
-
+        # Wait until the intermediate data transfer is completed.
         for duswait in self.dus:
             duswait.wait()            
             
 
+    #submit the reduce jobs.
+    
     def reduce_jobs(self):
         # start compute unit
         jobs=[]
@@ -237,7 +227,6 @@ class MapReduce:
         job_states = {}
         pj = 0
         dui = 0
-        pdb.set_trace()
         for machine_du in self.du_files: 
             for reduce_du in machine_du:
                 # get the paths. remove saga urls 
@@ -245,24 +234,21 @@ class MapReduce:
                 # remove the absoule paths.
                 k=map(lambda l:os.path.basename(l), k)
                 
-                self.log=open('mapreducelogfile','a')
-                self.log.write("reduce files"+ str(k) + "\n")
-                self.log.write("reduce"+ str(dui) + "\n")
-                self.log.write("machine"+ str(self.pilots[pj]['service_url']) + "\n")                
-                self.log.close()
-                
                 compute_unit_description = {
                     "executable": self.pilots[pj]['reducer'],
                     "arguments": [":"+ ":".join(k), self.pilots[pj]['output_dir'] ] + self.pilots[pj]['reduce_arguments'],
                     "total_core_count": 1,
                     "number_of_processes": self.pro_subjob,
                     "working_directory": self.dus[dui].url,
-                    "output": self.pilots[pj]['working_directory']  + "/stdredout-"+ str(dui)+".txt",
-                    "error": self.pilots[pj]['working_directory'] + "/stdrederr-"+ str(dui)+".txt",
+                    "output": "stdredout-"+ str(dui)+".txt",
+                    "error": "stdrederr-"+ str(dui)+".txt",
                     "affinity_datacenter_label": self.pilots[pj]['affinity_datacenter_label'],
                     "affinity_machine_label": self.pilots[pj]['affinity_machine_label']
                 }   
                 compute_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)
+                print "***************************- compute_unit_description - " +str(dui) + "***********************************"
+                print compute_unit_description
+                print "*****************************************************************************************"                
                 dui=dui+1
             pj=pj+1
         
@@ -304,7 +290,6 @@ class MapReduce:
         et=time.time()
         self.log=open('mapreducelogfile','a')
         self.log.write("Map time = " + str(round(et-st,2)) + "\n" )  
-        self.log.close()
         
         # cancel pilot jobs used for map phase
         self.compute_data_service.cancel()    
@@ -328,28 +313,23 @@ class MapReduce:
 
         # log messages
         et=time.time()
-        self.log=open('mapreducelogfile','a')
         self.log.write("Intermediate data transfer time = " + str(round(et-st,2)) + "\n" )
         st=time.time()
-        self.log.close()                
-        self.log=open('mapreducelogfile','a')
-        for i in self.dus:
-            self.log.write("DU-url"+str(i))
-        
+
+
         # start pilot jobs for reduce phase        
         self.start_reduce_pilot_jobs()        
+
         # submit reduce jobs to pilot jobs
         self.reduce_jobs()
 
         et=time.time()
-        self.log=open('mapreducelogfile','a')
         self.log.write("Reduce time = " + str(round(et-st,2)) + "\n" ) 
-        self.log.close()
+
+
         self.cancel()
         totet=time.time()
-        self.log=open('mapreducelogfile','a')
         self.log.write("Total time taken = " + str(round(totet - totst,2)) + "\n")
-        self.log.close()
 
 
 if __name__ == "__main__":
