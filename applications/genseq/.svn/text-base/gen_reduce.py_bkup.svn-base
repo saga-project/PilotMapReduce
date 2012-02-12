@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import pdb
+
+# input comes from STDIN (standard input)
+part_files=sys.argv[1]
+print part_files
+part_list=part_files.split(":")
+part_list=part_list[1:]
+pairs={}
+final_pairs={}
+k=str(part_list[0].split("-")[-1:][0])
+reduce_path=(os.path.split(part_list[0]))[0]
+reduce_file=reduce_path+"/reduce-"+str(k)
+reduce_write=open(reduce_file,'w')
+
+for i in part_list:
+    print " file name " + i
+    pdb.set_trace()
+    part_file=open(i,'r')
+    for line in part_file:
+        inp=line.split("KEYDELIM")
+        key=inp[0].strip()
+        setreads=inp[1].strip()
+        reads=setreads.split("READDELIM")
+        if final_pairs.has_key(key):
+            final_pairs[key] = final_pairs[key].append(reads)
+        else: 
+            final_pairs[key] = reads
+
+for k,v in final_pairs.items():
+    reduce_write.write(k+"---"+str(v)+"\n")
+            
