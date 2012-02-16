@@ -6,6 +6,7 @@ import pdb
 
 # input comes from STDIN (standard input)
 part_files=sys.argv[1]
+output_dir=sys.argv[2]
 print part_files
 part_list=part_files.split(":")
 part_list=part_list[1:]
@@ -13,9 +14,8 @@ pairs={}
 final_pairs={}
 
 k=str(part_list[0].split("-")[-1:][0])
-reduce_path=(os.path.split(part_list[0]))[0]
-reduce_file=reduce_path+"/reduce-"+str(k)
-duplicates_file=reduce_path+"/duplicates-"+str(k)
+reduce_file=output_dir+"/reduce-"+str(k)
+duplicates_file=output_dir+"/duplicates-"+str(k)
 reduce_write=open(reduce_file,'w')
 duplicates=open(duplicates_file,'w')
 
