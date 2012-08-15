@@ -257,9 +257,6 @@ class MapReduce:
         logger.debug(" Reduce jobs completed .... " )
                 
             
-            
-            
-
     def cancel(self):
         logger.info(" Terminate pilot Service ")
         self.compute_data_service.cancel()    
