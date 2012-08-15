@@ -39,7 +39,7 @@ class MapReduce:
 
 
     def start_chunking(self):
-        logger.info(" Start chunking Input data.... ")
+        logger.info(" Start chunking input data .... ")
         chunkjobs=[]
         for pilot in self.pilots:
             service_url = pilot['service_url']            
@@ -75,12 +75,12 @@ class MapReduce:
             remote_file_list = remote_files(pilot['temp_dir'],str(chunk_url) )
             mrf = mrfunctions(remote_file_list,self.chunk_type)
             self.chunk_list.append(mrf.group_chunk_files())
-            logger.info (" Chunking completed...... ")
-            logger.debug(" Chunked files on " + str(service_url) + self.chunk_list)
+            logger.debug (" Chunking completed .... ")
+            logger.debug(" Chunked files on " + str(service_url) + " - " +str( self.chunk_list) )
             
 
     def start_map_pilot_jobs(self):
-        logger.info(" Starting Map Pilots.... ")
+        logger.info(" Starting map pilots .... ")
         for pilot in self.pilots:
             pilot_job_desc = {"service_url":pilot['service_url'], "number_of_processes": pilot['map_number_of_processes'],
                               "working_directory":pilot['working_directory'],"walltime":pilot['map_walltime'], 
@@ -89,13 +89,13 @@ class MapReduce:
                               "affinity_machine_label":pilot['affinity_machine_label'] }
             pilotjob = self.pilot_compute_service.create_pilot(pilot_compute_description=pilot_job_desc)
             self.mappilotjobs.append(pilotjob)
-            logger.info(" Map Pilot on " + str(service_url) + " started.... ")
+            logger.info(" Map pilot on " + str(pilot['service_url']) + " started.... ")
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
-        logger.info(" All Map Pilots Started.... ")
+        logger.debug(" All map pilots started .... ")
         
     
     def start_reduce_pilot_jobs(self):
-        logger.info(" Starting Reduce Pilots....")
+        logger.info(" Starting reduce pilots ....")
         for pilot in self.pilots:
             pilot_job_desc = {"service_url":pilot['service_url'], "number_of_processes": pilot['reduce_number_of_processes'],
                               "working_directory":pilot['working_directory'],"walltime":pilot['reduce_walltime'], 
@@ -104,13 +104,13 @@ class MapReduce:
                               "affinity_machine_label":pilot['affinity_machine_label'] }
             pilotjob = self.pilot_compute_service.create_pilot(pilot_compute_description=pilot_job_desc)
             self.reducepilotjobs.append(pilotjob)
-            logger.info(" Reduce Pilot on " + str(service_url) + " started.... ")
+            logger.info(" Reduce pilot on " + str(pilot['service_url']) + " started .... ")
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
-        logger.info(" Reduce Pilots Started....")
+        logger.debug(" Reduce pilots started....")
 
         
     def map_jobs(self):
-        logger.info(" Submitting Map Jobs....")
+        logger.info(" Submitting map jobs .... ")
         jobs=[]
         job_start_times = {}
         job_states = {}
@@ -126,7 +126,7 @@ class MapReduce:
             temp_dir = pilot['temp_dir']
             j = 0
             for chunk_group in self.chunk_list[i]: 
-                print " chunk " + "-".join(chunk_group) + " is being processed "
+                #print " chunk " + "-".join(chunk_group) + " is being processed "
                 # start work unit 
                 compute_unit_description = {
                 "executable": mapper,
@@ -140,16 +140,16 @@ class MapReduce:
                 "affinity_machine_label": affinity_machine_label 
                 }    
                 work_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)
-                print " submitted jobs on resource -- " + str(i) + "-" + str(j)  
+                #print " submitted jobs on resource -- " + str(i) + "-" + str(j)  
                 j = j + 1
             i = i  + 1                                
-        logger.info(" All Map Jobs submitted ")
-        logger.debug(" No of map subjobs created - " + str(len(jobs) )
+        logger.debug(" All Map Jobs submitted ")
+        logger.debug(" No of map subjobs created - " + str(len(jobs) ) )
         ############################################################################################
         # Wait for task completion of map tasks - synchronization    
         self.compute_data_service.wait()
         ############################################################################################
-        logger.info(" Map Jobs Completed....")
+        logger.debug(" Map jobs completed ....")
                 
         #Get the list of all map output files on all the machines.
         sorted_part_file_list = []
@@ -168,10 +168,10 @@ class MapReduce:
 
     #Group map files related to a single reduce
     def group_map_files(self):
-        logger.info(" Group all Map Output files by reduce .... ")
+        logger.info(" Group all map output files by reduce .... ")
         for i in range(int(self.nbr_reduces)):
             self.du_files.append( filter(lambda k: k.split("-")[-1] == str(i) ,self.comb_map_sorted_part_file_list) )
-        logger.info(" Grouping done .... ")
+        logger.debug(" Grouping done .... ")
  
 
     #distributed reduces and its corresponding files to all machines equally.
@@ -185,25 +185,25 @@ class MapReduce:
 
     #start pilot datas on all the machines where intermediate data will be stored.
     def start_pilot_datas(self):
-        logger.info(" Starting Pilot Datas .... ")
+        logger.info(" Starting pilot datas .... ")
         for pilot in self.pilots:
             service_url = pilot['service_url']
             map_url=saga.Url(service_url)
             map_url.scheme="ssh"
-            print " Create pilot_data at " + str(map_url) + pilot['temp_dir']
+            logger.debug (" Create pilot_data at " + str(map_url) + pilot['temp_dir'] )
             pd_desc = { "service_url":str(map_url) + pilot['temp_dir']+"/pilotdata",
                         "size":100,
                         "affinity_datacenter_label": pilot['affinity_datacenter_label'],
                         "affinity_machine_label": pilot['affinity_machine_label']
                        }
-            print pd_desc
+            logger.debug ( " pilot description " + str(pd_desc) )
             ps = self.pilot_data_service.create_pilot( pilot_data_description=pd_desc )
         self.compute_data_service.add_pilot_data_service(self.pilot_data_service)
-        logger.info(" Pilot Datas Started.... ")
+        logger.debug(" Pilot datas started .... ")
 
     #submit data units to the pilot datas
     def create_pilot_descs(self):
-        logger.info(" Transferring Intermediate Data via Pilot Data .... ")
+        logger.info(" Transferring intermediate data via pilot data .... ")
         i=0
         for machine_du in self.du_files:
             for reduce_du in machine_du:
@@ -212,21 +212,20 @@ class MapReduce:
                                           "affinity_machine_label": self.pilots[i]['affinity_machine_label']
                                         }
                 data_unit = self.compute_data_service.submit_data_unit(data_unit_description)
-                logger.debug(" Reduce data_unit_description " + str( data_unit_description) )
+                logger.debug(" Reduce data unit description " + str( data_unit_description) )
                                 
                 self.dus.append(data_unit)
             i=i+1
         # Wait until the intermediate data transfer is completed.
-        for duswait in self.dus:
-            duswait.wait()            
-        logger.info(" Intermediate Data via PD transferred .... ")
+        self.compute_data_service.wait()         
+        logger.debug(" Intermediate data via PD transferred .... ")
             
 
     #submit the reduce jobs.
     
     def reduce_jobs(self):
         # start compute unit
-        logger.info(" Starting Reduce Jobs .... " )
+        logger.info(" Submitting reduce jobs .... " )
         jobs=[]
         job_start_times = {}
         job_states = {}
@@ -250,25 +249,25 @@ class MapReduce:
                     "affinity_machine_label": self.pilots[pj]['affinity_machine_label']
                 }   
                 compute_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)
-                logger.debug( "Reduce compute unit description " + str(compute_unit_description) )
+                logger.debug( " Reduce compute unit description " + str(compute_unit_description) )
                 dui=dui+1
             pj=pj+1
         
         self.compute_data_service.wait()    
-        logger.info(" Reduce Jobs Completed .... " )
+        logger.debug(" Reduce jobs completed .... " )
                 
             
             
             
 
     def cancel(self):
-        logger.info(" Terminate Pilot Data/Store Service ")
+        logger.info(" Terminate pilot Service ")
         self.compute_data_service.cancel()    
         self.pilot_compute_service.cancel()
         self.pilot_data_service.cancel()
     
     def pstart(self):
-        logger.info(" start Pilot Data/Store Service ")
+        logger.info(" Start pilot service ")
         self.compute_data_service=ComputeDataService()    
         self.pilot_compute_service=PilotComputeService(self.coordination_url)
         self.pilot_data_service=PilotDataService(self.coordination_url)
@@ -281,7 +280,7 @@ class MapReduce:
         ##  chunk
         self.start_chunking()
         et=time.time()
-        logger.info(" chunk time = " + str(round(et-st,2)) )  
+        logger.info(" Chunk time = " + str(round(et-st,2)) + "secs")  
         st=time.time()
         
         ## Start pilot jobs for map phase
@@ -291,7 +290,7 @@ class MapReduce:
         self.map_jobs()
         et=time.time()
         
-        logger.info(" Map time =  "+ str(round(et-st,2)) ) 
+        logger.info(" Map time =  "+ str(round(et-st,2)) + "secs") 
         
         # cancel pilot jobs used for map phase
         self.compute_data_service.cancel()    
@@ -315,7 +314,7 @@ class MapReduce:
 
         # log messages
         et=time.time()
-        logger.info(" Intermediate data transfer time = " + str(round(et-st,2)) )
+        logger.info(" Intermediate data transfer time = " + str(round(et-st,2)) + "secs" )
         
         
         st=time.time()
@@ -329,10 +328,9 @@ class MapReduce:
 
         et=time.time()
        
-        logger.info(" Reduce time = " + str(round(et-st,2)) ) 
+        logger.info(" Reduce time = " + str(round(et-st,2)) + "secs" ) 
         
 
         self.cancel()
         totet=time.time()
-        logger.info(" Total time taken = " + str(round(totet - totst,2)) )
-        
+        logger.info(" PilotMapReduce jo completed and total time taken = " + str(round(totet - totst,2)) + "secs")
