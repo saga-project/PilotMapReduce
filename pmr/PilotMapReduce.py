@@ -39,16 +39,16 @@ class MapReduce:
 
 
     def start_chunking(self):
+        logger.info(" Start chunking Input data.... ")
         chunkjobs=[]
         for pilot in self.pilots:
             service_url = pilot['service_url']            
             chunker = pilot['chunker']
-            print chunker
             chunk_parameters = []
             chunk_parameters.append( pilot['input_dir'] )
             chunk_parameters.append( pilot['temp_dir'] )
             chunk_parameters = chunk_parameters + pilot['chunk_arguments']
-            print chunk_parameters
+            logger.debug (" chunk_parameters " + str(chunk_parameters) )
             jd = saga.job.Description()
             jd.executable = chunker
             jd.arguments = chunk_parameters 
@@ -76,11 +76,11 @@ class MapReduce:
             mrf = mrfunctions(remote_file_list,self.chunk_type)
             self.chunk_list.append(mrf.group_chunk_files())
             logger.info (" Chunking completed...... ")
-            logger.info (self.chunk_list)
+            logger.debug(" Chunked files on " + str(service_url) + self.chunk_list)
             
 
     def start_map_pilot_jobs(self):
-        logger.info(" Starting Map Pilots....")
+        logger.info(" Starting Map Pilots.... ")
         for pilot in self.pilots:
             pilot_job_desc = {"service_url":pilot['service_url'], "number_of_processes": pilot['map_number_of_processes'],
                               "working_directory":pilot['working_directory'],"walltime":pilot['map_walltime'], 
@@ -89,8 +89,9 @@ class MapReduce:
                               "affinity_machine_label":pilot['affinity_machine_label'] }
             pilotjob = self.pilot_compute_service.create_pilot(pilot_compute_description=pilot_job_desc)
             self.mappilotjobs.append(pilotjob)
+            logger.info(" Map Pilot on " + str(service_url) + " started.... ")
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
-        logger.info(" Map Pilots Started....")
+        logger.info(" All Map Pilots Started.... ")
         
     
     def start_reduce_pilot_jobs(self):
@@ -103,6 +104,7 @@ class MapReduce:
                               "affinity_machine_label":pilot['affinity_machine_label'] }
             pilotjob = self.pilot_compute_service.create_pilot(pilot_compute_description=pilot_job_desc)
             self.reducepilotjobs.append(pilotjob)
+            logger.info(" Reduce Pilot on " + str(service_url) + " started.... ")
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
         logger.info(" Reduce Pilots Started....")
 
@@ -141,16 +143,14 @@ class MapReduce:
                 print " submitted jobs on resource -- " + str(i) + "-" + str(j)  
                 j = j + 1
             i = i  + 1                                
-        print "************************ All Map Jobs submitted ************************"
-        print " No of map subjobs created - " + str(len(jobs))
+        logger.info(" All Map Jobs submitted ")
+        logger.debug(" No of map subjobs created - " + str(len(jobs) )
         ############################################################################################
         # Wait for task completion of map tasks - synchronization    
         self.compute_data_service.wait()
         ############################################################################################
         logger.info(" Map Jobs Completed....")
-
-        
-        
+                
         #Get the list of all map output files on all the machines.
         sorted_part_file_list = []
         for pilot in self.pilots:
@@ -162,7 +162,6 @@ class MapReduce:
             sorted_partion_files = filter( lambda x: 'sorted-part' in x, remote_file_list)
             # add ssh url to the map files. used by pilot data.
             sorted_part_file_list.append( map(lambda i:str(map_url) +"/"+ i, sorted_partion_files ) )
-
 
         for map_sorted_part_file_list in sorted_part_file_list:
             self.comb_map_sorted_part_file_list =  self.comb_map_sorted_part_file_list + map_sorted_part_file_list
@@ -182,10 +181,7 @@ class MapReduce:
         else:
             dist = self.nbr_reduces/len(self.pilots)
         self.du_files = [ self.du_files[i:i+dist] for i in range(0, len(self.du_files), dist )]
-        print "********ALL DU FILES********************************************************************"
-        print self.du_files
-        print "*********************************************************************************"
-        
+        logger.debug(" DU Files " + str(self.du_files) )
 
     #start pilot datas on all the machines where intermediate data will be stored.
     def start_pilot_datas(self):
@@ -211,17 +207,13 @@ class MapReduce:
         i=0
         for machine_du in self.du_files:
             for reduce_du in machine_du:
-                print "---------------- " + str(reduce_du)
                 data_unit_description = { "file_urls":reduce_du,
                                           "affinity_datacenter_label": self.pilots[i]['affinity_datacenter_label'],
                                           "affinity_machine_label": self.pilots[i]['affinity_machine_label']
                                         }
                 data_unit = self.compute_data_service.submit_data_unit(data_unit_description)
-                print "**********DDDDAATTAAA*****************- data_unit_description - " +str(i) + "***********************************"
-                print data_unit_description
-                print "*****************************************************************************************"  
-                
-                
+                logger.debug(" Reduce data_unit_description " + str( data_unit_description) )
+                                
                 self.dus.append(data_unit)
             i=i+1
         # Wait until the intermediate data transfer is completed.
@@ -234,7 +226,7 @@ class MapReduce:
     
     def reduce_jobs(self):
         # start compute unit
-        logger.info(" Submitting Reduce Jobs **************** " )
+        logger.info(" Starting Reduce Jobs .... " )
         jobs=[]
         job_start_times = {}
         job_states = {}
@@ -258,27 +250,25 @@ class MapReduce:
                     "affinity_machine_label": self.pilots[pj]['affinity_machine_label']
                 }   
                 compute_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)
-                print "***************************- compute_unit_description - " +str(dui) + "***********************************"
-                print compute_unit_description
-                print "*****************************************************************************************"                
+                logger.debug( "Reduce compute unit description " + str(compute_unit_description) )
                 dui=dui+1
             pj=pj+1
         
         self.compute_data_service.wait()    
-        logger.info("Reduce Jobs Completed **************** " )
+        logger.info(" Reduce Jobs Completed .... " )
                 
             
             
             
 
     def cancel(self):
-        logger.info("Terminate Pilot Data/Store Service")
+        logger.info(" Terminate Pilot Data/Store Service ")
         self.compute_data_service.cancel()    
         self.pilot_compute_service.cancel()
         self.pilot_data_service.cancel()
     
     def pstart(self):
-        logger.info("start Pilot Data/Store Service")
+        logger.info(" start Pilot Data/Store Service ")
         self.compute_data_service=ComputeDataService()    
         self.pilot_compute_service=PilotComputeService(self.coordination_url)
         self.pilot_data_service=PilotDataService(self.coordination_url)
@@ -291,7 +281,7 @@ class MapReduce:
         ##  chunk
         self.start_chunking()
         et=time.time()
-        logger.info("chunk time = " + str(round(et-st,2)) )  
+        logger.info(" chunk time = " + str(round(et-st,2)) )  
         st=time.time()
         
         ## Start pilot jobs for map phase
@@ -301,7 +291,7 @@ class MapReduce:
         self.map_jobs()
         et=time.time()
         
-        logger.info("Map time =  "+ str(round(et-st,2)) ) 
+        logger.info(" Map time =  "+ str(round(et-st,2)) ) 
         
         # cancel pilot jobs used for map phase
         self.compute_data_service.cancel()    
@@ -325,7 +315,7 @@ class MapReduce:
 
         # log messages
         et=time.time()
-        logger.info("Intermediate data transfer time = " + str(round(et-st,2)) )
+        logger.info(" Intermediate data transfer time = " + str(round(et-st,2)) )
         
         
         st=time.time()
@@ -339,80 +329,10 @@ class MapReduce:
 
         et=time.time()
        
-        logger.info("Reduce time = " + str(round(et-st,2)) ) 
+        logger.info(" Reduce time = " + str(round(et-st,2)) ) 
         
 
         self.cancel()
         totet=time.time()
-        logger.info("Total time taken = " + str(round(totet - totst,2)) )
+        logger.info(" Total time taken = " + str(round(totet - totst,2)) )
         
-        
-
-
-if __name__ == "__main__":
-    pilots=[]
-    """pilots.append({ "service_url": 'pbs-ssh://india.futuregrid.org',
-                       "map_number_of_processes":8,
-                       "reduce_number_of_processes":8,
-                       "working_directory": "/N/u/pmantha/agent",
-                       'processes_per_node':8,
-                       "map_walltime":100,
-                       "reduce_walltime":100,
-                       "affinity_datacenter_label": 'eu-de-south', 
-                       "affinity_machine_label": 'mymachine',
-                       "input_dir":'/N/u/pmantha/data/',
-                       "temp_dir":'/N/u/pmantha/temp',
-                       "output_dir":'/N/u/pmantha/output',
-                       "chunker":'/N/u/pmantha/PilotMapReduce/source/applications/wordcount/wordcount_chunk.sh',
-                       "chunk_arguments":[ str(64 * 1024*1024) ],
-                       "mapper":'/N/u/pmantha/PilotMapReduce/source/applications/wordcount/wordcount_map_partition.py',
-                       "map_arguments":[],
-                       "reducer":'/N/u/pmantha/PilotMapReduce/source/applications/wordcount/wordcount_reduce.py',
-                       "reduce_arguments":[],
-                       "pilot_data":'/N/u/pmantha/temp/pilotdata'
-                      })"""
-    pilots.append({ "service_url": 'pbs+ssh://sierra.futuregrid.org',
-                       "map_number_of_processes":8,
-                       "reduce_number_of_processes":8,
-                       "working_directory": "/N/u/pmantha/agent",
-                       "map_walltime":100,
-                       "reduce_walltime":100,
-                       "affinity_datacenter_label": 'eu-de-south-1', 
-                       "affinity_machine_label": 'mymachine-1',
-                       "input_dir":'/N/u/pmantha/data',
-                       'processes_per_node':8,
-                       "temp_dir":'/N/u/pmantha/temp',
-                       "output_dir":'/N/u/pmantha/output',
-                       "chunker":'/N/u/pmantha/PilotMapReduce/applications/wordcount/wordcount_chunk.sh',
-                       "chunk_arguments":[ str( 32 * 1024*1024) ],
-                       "mapper":'/N/u/pmantha/PilotMapReduce/applications/wordcount/wordcount_map_partition.py',
-                       "map_arguments":[],
-                       "reducer":'/N/u/pmantha/PilotMapReduce/applications/wordcount/wordcount_reduce.py',
-                       "reduce_arguments":[],
-                       "pilot_data":'/N/u/pmantha/temp/pilotdata',
-                      })
-    """ pilots.append({ "service_url": 'pbs-ssh://india.futuregrid.org',
-                       "map_number_of_processes":8,
-                       'processes_per_node':8,
-                       "reduce_number_of_processes":8,
-                       "working_directory": "/N/u/pmantha/agent",
-                       "map_walltime":100,
-                       "reduce_walltime":100,
-                       "affinity_datacenter_label": 'eu-de-south-2', 
-                       "affinity_machine_label": 'mymachine-2',
-                       "input_dir":'/N/u/pmantha/data/128/',
-                       "temp_dir":'/N/u/pmantha/temp',
-                       "output_dir":'/N/u/pmantha/output',
-                       "chunker":'/N/u/pmantha/PilotMapReduce/source/applications/wordcount/wordcount_chunk.sh',
-                       "chunk_arguments":[ str(64 * 1024*1024) ],
-                       "mapper":'/N/u/pmantha/PilotMapReduce/source/applications/wordcount/wordcount_map_partition.py',
-                       "map_arguments":[],
-                       "reducer":'/N/u/pmantha/PilotMapReduce/source/applications/wordcount/wordcount_reduce.py',
-                       "reduce_arguments":[],
-                       "pilot_data":'/N/u/pmantha/temp/'
-                      })"""
-
-                    
-    chunk_type = 1 # chunk_type specifies bytes/line based chunking. 1= bytes based chunking
-    mr = MapReduce(pilots,8,"1","redis://ILikeBigJob_wITH-REdIS@gw68.quarry.iu.teragrid.org:6379",chunk_type)
-    mr.MapReduceMain()
