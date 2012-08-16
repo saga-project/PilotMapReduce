@@ -8,8 +8,9 @@ NUMBER_OF_REDUCES=8
 
 if __name__ == "__main__":
     pmr_spec=[]
+
     pmr_spec.append({ # Machine specific parameters
-                    "service_url": 'fork://localhost',
+                    "service_url": 'pbs+ssh://sierra.futuregrid.org',
                     "working_directory": os.getcwd()+'/agent',
                     "affinity_datacenter_label": 'eu-de-south-1',
                     "affinity_machine_label": 'mymachine-1',

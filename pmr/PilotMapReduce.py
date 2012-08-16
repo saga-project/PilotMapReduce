@@ -42,10 +42,6 @@ class MapReduce:
         for pilot in self.pilots:
             service_url = pilot['service_url']            
             chunk_url=saga.Url(service_url)
-            chunk_url.scheme="ssh"
-            chunker = pilot['chunker']
-            chunk_parameters = []
-            chunk_parameters.append( pilot['input_dir'] )
             try:
                 saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['input_dir'] )
             except:
@@ -58,6 +54,11 @@ class MapReduce:
                 t.remove()
             saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['temp_dir'], saga.filesystem.Create)            
             saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['output_dir'], saga.filesystem.Create)
+
+            chunk_url.scheme="ssh"
+            chunker = pilot['chunker']
+            chunk_parameters = []
+            chunk_parameters.append( pilot['input_dir'] )            
             chunk_parameters.append( pilot['temp_dir'] )
             chunk_parameters = chunk_parameters + pilot['chunk_arguments']
             logger.debug (" chunk_parameters " + str(chunk_parameters) )
@@ -67,7 +68,7 @@ class MapReduce:
             jd.arguments = chunk_parameters 
             jd.output = pilot['working_directory'] + "/chunk.log"
             jd.error = pilot['working_directory'] + "/chunk.err"
-
+            jd.number_of_processes = "1"
             js = saga.job.Service(chunk_url)         
             job =  js.create_job(jd)  
             job.run()
@@ -87,12 +88,61 @@ class MapReduce:
             chunk_url.scheme="ssh"            
             remote_file_list = remote_files(pilot['temp_dir'],str(chunk_url) )
             mrf = mrfunctions(remote_file_list,chunk_type)
-            self.chunk_list.append(mrf.group_chunk_files())
+            cl=mrf.group_chunk_files()
+            self.chunk_list=[cl]
+            logger.debug (" Chunking completed .... ")
+            logger.info(" Chunked files on " + str(service_url) + " - " +str( self.chunk_list) )
+            del mrf
+            del cl
+            return len(self.pilots)
+
+
+    """def start_chunking(self):
+        logger.info(" Start chunking input data .... ")
+        chunkjobs=[]
+        for pilot in self.pilots:
+            service_url = pilot['service_url']            
+            chunker = pilot['chunker']
+            chunk_parameters = []
+            chunk_parameters.append( pilot['input_dir'] )
+            chunk_parameters.append( pilot['temp_dir'] )
+            chunk_parameters = chunk_parameters + pilot['chunk_arguments']
+            logger.debug (" chunk_parameters " + str(chunk_parameters) )
+                                             
+            jd = saga.job.Description()
+            jd.executable = chunker
+            jd.arguments = chunk_parameters 
+            jd.output = pilot['working_directory'] + "/chunk.log"
+            jd.error = pilot['working_directory'] + "/chunk.err"
+            chunk_url=saga.Url(service_url)
+            chunk_url.scheme="ssh"
+            js = saga.job.Service(chunk_url)         
+            job =  js.create_job(jd)  
+            job.run()
+            chunkjobs.append(job)
+              
+        count = 0;
+        for j in chunkjobs:
+            if j.get_state() == saga.job.Job.Done:
+                count = count + 1
+            if count == len(self.pilots):
+                break
+                
+        for pilot in self.pilots:
+            service_url = pilot['service_url']
+            chunk_url=saga.Url(service_url)
+            chunk_url.scheme="ssh"            
+            remote_file_list = remote_files(pilot['temp_dir'],str(chunk_url) )
+            logger.info("Remote file list")
+            logger.info(remote_file_list)
+            mrf = mrfunctions(remote_file_list,pilot['chunk_type'])
+            logger.info(" grouped files ")            
+            cl=mrf.group_chunk_files()
+            self.chunk_list=[cl]
+            logger.info(self.chunk_list)
             logger.debug (" Chunking completed .... ")
             logger.debug(" Chunked files on " + str(service_url) + " - " +str( self.chunk_list) )
-
-            return len(self.pilots)
-            
+            #logger.info(self.chunk_list)"""
 
     def start_map_pilot_jobs(self):
         logger.info(" Starting map pilots .... ")
