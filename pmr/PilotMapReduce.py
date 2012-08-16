@@ -18,19 +18,17 @@ def remote_files(base_dir, url):
 
 class MapReduce:
 
-    def __init__(self,pilots,nbr_reduces,pro_subjob,coordination_url,chunk_type):
+    def __init__(self,pilots,nbr_reduces,coordination_url):
 
         self.pilots = pilots
         self.nbr_reduces = nbr_reduces
         self.coordination_url = coordination_url
-        self.pro_subjob = pro_subjob
         self.chunk_list = []
         self.comb_map_sorted_part_file_list = []
         self.du_files = []
         self.div_reduces =[]
         self.reduce_files = []
         self.dus = []
-        self.chunk_type = chunk_type
         self.mappilotjobs=[]
         self.reducepilotjobs=[]
         self.coordinaton_url=""
@@ -43,19 +41,33 @@ class MapReduce:
         chunkjobs=[]
         for pilot in self.pilots:
             service_url = pilot['service_url']            
+            chunk_url=saga.Url(service_url)
+            chunk_url.scheme="ssh"
             chunker = pilot['chunker']
             chunk_parameters = []
             chunk_parameters.append( pilot['input_dir'] )
+            try:
+                saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['input_dir'] )
+            except:
+                logger.info( " Input directory " + pilot['input_dir'] + " on " + chunk_url.host + " doesn't present" )
+                self.pilots.remove(pilot)
+                continue                
+            
+            t = saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['temp_dir'], saga.filesystem.Create)
+            if t:
+                t.remove()
+            saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['temp_dir'], saga.filesystem.Create)            
+            saga.filesystem.Directory("sftp://"+ chunk_url.host + "/"+ pilot['output_dir'], saga.filesystem.Create)
             chunk_parameters.append( pilot['temp_dir'] )
             chunk_parameters = chunk_parameters + pilot['chunk_arguments']
             logger.debug (" chunk_parameters " + str(chunk_parameters) )
+            
             jd = saga.job.Description()
             jd.executable = chunker
             jd.arguments = chunk_parameters 
             jd.output = pilot['working_directory'] + "/chunk.log"
             jd.error = pilot['working_directory'] + "/chunk.err"
-            chunk_url=saga.Url(service_url)
-            chunk_url.scheme="ssh"
+
             js = saga.job.Service(chunk_url)         
             job =  js.create_job(jd)  
             job.run()
@@ -70,13 +82,16 @@ class MapReduce:
                 
         for pilot in self.pilots:
             service_url = pilot['service_url']
+            chunk_type=pilot['chunk_type']
             chunk_url=saga.Url(service_url)
             chunk_url.scheme="ssh"            
             remote_file_list = remote_files(pilot['temp_dir'],str(chunk_url) )
-            mrf = mrfunctions(remote_file_list,self.chunk_type)
+            mrf = mrfunctions(remote_file_list,chunk_type)
             self.chunk_list.append(mrf.group_chunk_files())
             logger.debug (" Chunking completed .... ")
             logger.debug(" Chunked files on " + str(service_url) + " - " +str( self.chunk_list) )
+
+            return len(self.pilots)
             
 
     def start_map_pilot_jobs(self):
@@ -131,8 +146,7 @@ class MapReduce:
                 compute_unit_description = {
                 "executable": mapper,
                 "arguments": chunk_group + mapper_arguments,
-                "total_core_count": 1,
-                "number_of_processes": self.pro_subjob,
+                "number_of_processes": pilot['map_job_number_of_processes'],
                 "working_directory": temp_dir,
                 "output": "stdout"+ str(i) +"-" + str(j)+".txt",
                 "error": "stderr"+ str(i) +"-" + str(j)+".txt",
@@ -241,7 +255,7 @@ class MapReduce:
                 compute_unit_description = {
                     "executable": self.pilots[pj]['reducer'],
                     "arguments": [":"+ ":".join(k), self.pilots[pj]['output_dir'] ] + self.pilots[pj]['reduce_arguments'],
-                    "number_of_processes": self.pro_subjob,
+                    "number_of_processes": self.pilots[pj]['reduce_job_number_of_processes'],
                     "input_data" : [self.dus[dui].get_url()],
                     "output": "stdredout-"+ str(dui)+".txt",
                     "error": "stdrederr-"+ str(dui)+".txt",
@@ -275,59 +289,61 @@ class MapReduce:
         totst=time.time()
         st=time.time()
         ##  chunk
-        self.start_chunking()
-        et=time.time()
-        logger.info(" Chunk time = " + str(round(et-st,2)) + "secs")  
-        st=time.time()
+        np = self.start_chunking()
+        ## if number of pilots > 0 then
+        if np > 0 :
+            et=time.time()
+            logger.info(" Chunk time = " + str(round(et-st,2)) + "secs")  
+            st=time.time()
         
-        ## Start pilot jobs for map phase
-        self.start_map_pilot_jobs()
-        
-        ## submit map jobs 
-        self.map_jobs()
-        et=time.time()
-        
-        logger.info(" Map time =  "+ str(round(et-st,2)) + "secs") 
-        
-        # cancel pilot jobs used for map phase
-        self.compute_data_service.cancel()    
-        self.pilot_compute_service.cancel()
-        st=time.time()
-        
-        # start pilot compute,data services for intermediate data movement.
-        self.pstart()
-        
-        # group map files relate to a reduce.
-        self.group_map_files()
-        
-        # split data units between pilot datas
-        self.split_pd() 
-        
-        # create pilot datas
-        self.start_pilot_datas()                
-        
-        # submit data units to pilot datas
-        self.create_pilot_descs()
-
-        # log messages
-        et=time.time()
-        logger.info(" Intermediate data transfer time = " + str(round(et-st,2)) + "secs" )
-        
-        
-        st=time.time()
-
-
-        # start pilot jobs for reduce phase        
-        self.start_reduce_pilot_jobs()        
-
-        # submit reduce jobs to pilot jobs
-        self.reduce_jobs()
-
-        et=time.time()
-       
-        logger.info(" Reduce time = " + str(round(et-st,2)) + "secs" ) 
-        
-
-        self.cancel()
-        totet=time.time()
-        logger.info(" PilotMapReduce jo completed and total time taken = " + str(round(totet - totst,2)) + "secs")
+            ## Start pilot jobs for map phase
+            self.start_map_pilot_jobs()
+            
+            ## submit map jobs 
+            self.map_jobs()
+            et=time.time()
+            
+            logger.info(" Map time =  "+ str(round(et-st,2)) + "secs") 
+            
+            # cancel pilot jobs used for map phase
+            self.compute_data_service.cancel()    
+            self.pilot_compute_service.cancel()
+            st=time.time()
+            
+            # start pilot compute,data services for intermediate data movement.
+            self.pstart()
+            
+            # group map files relate to a reduce.
+            self.group_map_files()
+            
+            # split data units between pilot datas
+            self.split_pd() 
+            
+            # create pilot datas
+            self.start_pilot_datas()                
+            
+            # submit data units to pilot datas
+            self.create_pilot_descs()
+    
+            # log messages
+            et=time.time()
+            logger.info(" Intermediate data transfer time = " + str(round(et-st,2)) + "secs" )
+            
+            
+            st=time.time()
+    
+    
+            # start pilot jobs for reduce phase        
+            self.start_reduce_pilot_jobs()        
+    
+            # submit reduce jobs to pilot jobs
+            self.reduce_jobs()
+    
+            et=time.time()
+           
+            logger.info(" Reduce time = " + str(round(et-st,2)) + "secs" ) 
+            
+    
+            self.cancel()
+            totet=time.time()
+            logger.info(" PilotMapReduce job completed and total time taken = " + str(round(totet - totst,2)) + "secs")
