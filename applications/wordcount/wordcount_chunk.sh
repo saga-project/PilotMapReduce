@@ -1,11 +1,7 @@
 #!/bin/bash
 
-input_dir=$1
-temp_dir=$2
-chunk_size=$3
+input=$1
+chunk_size=$2
 h=`hostname`
 
-for i in `ls $input_dir`
-do
-    split -d -b $3  $1"/"$i $2"/"$h$i
-done
+split -d -b $2  $1 $h$input'-chunk-'

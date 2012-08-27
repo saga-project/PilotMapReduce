@@ -26,7 +26,7 @@ for line in f:
 
 for i in range(0,int(nbr_reduces)):
     p_name="part-"+str(i) 
-    sorted_part_nbr.append(open( file1 + "sorted-"+ p_name,'w'))
+    sorted_part_nbr.append(open( file1 + "-sorted-map-"+ p_name,'w'))
 
 for i in range(0,int(nbr_reduces)):
     part_nbr[i].sort()
