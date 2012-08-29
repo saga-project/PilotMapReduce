@@ -30,7 +30,7 @@ class MapReduce:
         self.reduce_arguments=[]  
         self.output=""              
         self.input_dus = []
-        self.chunk_dus = {}
+        self.chunk_dus = []
         self.executables =[]
         self.reduce_du = []
         self.output_du = []
@@ -49,43 +49,58 @@ class MapReduce:
                         "size":100,
                         "affinity_datacenter_label": pilot['affinity_datacenter_label'],
                         "affinity_machine_label": pilot['affinity_machine_label']
-                      }
+                      }            
             ## cloud specific attributes
             if pilot.has_key('access_key_id'):
                 pd_desc["access_key_id"] = pilot['access_key_id']
             if pilot.has_key('secret_access_key'):
                 pd_desc["secret_access_key"] = pilot['secret_access_key']
                 
-            logger.debug ( " pilot description " + str(pd_desc) )            
+            logger.info ( " pilot description " + str(pd_desc) )            
             self.pilot_data_service.create_pilot( pilot_data_description=pd_desc )
         self.compute_data_service.add_pilot_data_service(self.pilot_data_service)
         logger.debug(" Pilot datas started .... ")
 
-    def remote_files(self, base_dir, url):
-        dir = saga.filesystem.Directory("sftp://"+saga.Url(url).host+"/"+base_dir)  
-        return map(lambda i:base_dir+"/"+i, dir.list() ) 
+    def remote_files(self, input):
+        input=saga.Url(input)         
+        if input.scheme == '':        
+            dir = saga.filesystem.Directory("sftp://localhost/"+str(input)) 
+            return map(lambda i:input.get_path()+"/"+i, dir.list() ) 
+        else:
+            dir = saga.filesystem.Directory(input) 
+            input.scheme = "ssh"            
+            return map(lambda i:str(input)+"/"+i, dir.list() )             
       
     def load_input_data(self):
         logger.info(" Loading input data of each pilot.... ")
-        for pilot in self.pilots:        
-            data_unit_description = { "file_urls": self.remote_files(pilot['input'], pilot['pd_service_url']) ,
+        for pilot in self.pilots:     
+            if pilot.has_key('input'):
+                data_unit_description = { "file_urls": self.remote_files(pilot['input']) ,
                                       "affinity_datacenter_label": pilot['affinity_datacenter_label'],
                                       "affinity_machine_label": pilot['affinity_machine_label']
                                     }
-            # submit pilot data to a pilot store 
-            self.input_dus.append(self.compute_data_service.submit_data_unit(data_unit_description))
+                # submit pilot data to a pilot store 
+                self.input_dus.append(self.compute_data_service.submit_data_unit(data_unit_description))
         self.compute_data_service.wait()           
         
     def load_chunk_mapper_reducer(self):
         logger.info(" Registering chunk,mapper and reducer script of each pilot .... ") 
              
-        chunk_unit_description = { "file_urls": ["ssh://localhost/"+self.chunk]}        
+        chunk_unit_description = { "file_urls": [self.chunk],
+                                   "affinity_datacenter_label": self.pilots[0]['affinity_datacenter_label'],
+                                   "affinity_machine_label": self.pilots[0]['affinity_machine_label']}        
+                                   
         self.cmr['chunk'] = self.compute_data_service.submit_data_unit(chunk_unit_description) 
         
-        mapper_unit_description = { "file_urls": ["ssh://localhost/"+self.mapper] }   
+        mapper_unit_description = { "file_urls": [self.mapper],
+                                   "affinity_datacenter_label": self.pilots[0]['affinity_datacenter_label'],
+                                   "affinity_machine_label": self.pilots[0]['affinity_machine_label']}                                               
         self.cmr['mapper']=self.compute_data_service.submit_data_unit(mapper_unit_description) 
         
-        reducer_unit_description = { "file_urls": ["ssh://localhost/"+self.reducer] }
+        reducer_unit_description = { "file_urls": [self.reducer],
+                                   "affinity_datacenter_label": self.pilots[0]['affinity_datacenter_label'],
+                                   "affinity_machine_label": self.pilots[0]['affinity_machine_label']} 
+                                           
         self.cmr['reducer']=self.compute_data_service.submit_data_unit(reducer_unit_description) 
         
         # submit pilot data to a pilot store 
@@ -94,11 +109,11 @@ class MapReduce:
     def start_pilot_jobs(self):
         logger.info(" Starting Pilot Jobs .... ")   
         for pilot in self.pilots:
-            pilot_job_desc = {"service_url":pilot['pj_service_url'], 
-                              "number_of_processes": pilot['number_of_processes'],                                                             
+            pilot_job_desc = {"service_url":pilot['pj_service_url'],                                                                                            
                               "affinity_datacenter_label": pilot['affinity_datacenter_label'],
                               "affinity_machine_label":pilot['affinity_machine_label'] }
-
+            if pilot.has_key('number_of_processes'):
+                pilot_job_desc['number_of_processes'] = pilot['number_of_processes']
             if pilot.has_key('walltime'):
                 pilot_job_desc['walltime']=pilot['walltime']
             if pilot.has_key('working_directory'):
@@ -125,38 +140,33 @@ class MapReduce:
         logger.info(" Chunk input data on each pilot.... ")   
         i=0
         
-        for pilot in self.pilots:
+        for input_du in self.input_dus:
             # Maintain chunk list per machine. affinity_datacenter_label is unique for each pilot.
-            self.chunk_dus[pilot['affinity_datacenter_label']]=[]
                         
             # create empty data unit for output data
             chunk_du_description = { "file_urls": [], 
-                                     "affinity_datacenter_label": pilot['affinity_datacenter_label'],
-                                     "affinity_machine_label":pilot['affinity_machine_label'] }  
+                                     "affinity_datacenter_label": input_du.data_unit_description['affinity_datacenter_label'],
+                                     "affinity_machine_label":input_du.data_unit_description['affinity_machine_label'] }  
                                      
             chunk_du = self.compute_data_service.submit_data_unit(chunk_du_description)
             chunk_du.wait()
             
             # create compute unit
-            count = 0
             logger.info('PD URL to reconnect - ' + str (chunk_du.get_url()) )
             for input in self.input_dus[i].list():
                 compute_unit_description = {
-                    "executable": "./" + str((self.cmr['chunk'].list()).iterkeys().next()),
-                    "arguments": [input] + self.chunk_arguments,
+                    "executable": "/bin/sh",
+                    "arguments": [str((self.cmr['chunk'].list()).iterkeys().next()), input] + self.chunk_arguments,
                     "number_of_processes": 1,
                     "output": "chunk.out",
                     "error": "chunk.err",
-                    "affinity_datacenter_label": pilot['affinity_datacenter_label'],
-                    "affinity_machine_label":pilot['affinity_machine_label'] ,
+                    "affinity_datacenter_label": input_du.data_unit_description['affinity_datacenter_label'],
+                    "affinity_machine_label":input_du.data_unit_description['affinity_machine_label'] ,
                     # Put files stdout.txt and stderr.txt into output data unit
-                    "output_data": [{ chunk_du.get_url(): ['*-chunk-*']} ]
-                    }                
-                if count == 0:
-                    compute_unit_description["input_data"] = [self.cmr['chunk'].get_url(),self.input_dus[i].get_url()]
-                    count = count + 1                                        
-                    
-            self.chunk_dus[pilot['affinity_datacenter_label']].append(chunk_du)
+                    "output_data": [{ chunk_du.get_url(): ['*-chunk-*']} ],
+                    "input_data":[self.cmr['chunk'].get_url(),self.input_dus[i].get_url()] 
+                    }                                                                                           
+            self.chunk_dus.append(chunk_du)
             i = i + 1
             compute_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)            
         self.compute_data_service.wait()        
@@ -175,35 +185,34 @@ class MapReduce:
         logger.info(" Reduces prepared .... ")    
                
         logger.info(" Submit the Map jobs .... ")                       
-        for pilot in self.pilots:
-            for chunk_du in self.chunk_dus[pilot['affinity_datacenter_label']]:
-                for chunk, info in chunk_du.list().items():
-                    chunk_du_description =  { "file_urls": info['pilot_data'], 
-                                              "affinity_datacenter_label": pilot['affinity_datacenter_label'],
-                                              "affinity_machine_label":pilot['affinity_machine_label'] }
-                                              
-                    cdu = self.compute_data_service.submit_data_unit(chunk_du_description)
-                    self.compute_data_service.wait()   
-                                  
-                    map_job_description = {
-                        "executable": "./" + str((self.cmr['mapper'].list()).iterkeys().next()),
-                        "arguments": [chunk,str(self.nbr_reduces)] + self.map_arguments,
-                        "number_of_processes": self.map_number_of_processes,
-                        "output": "map.out",                                              
-                        "error": "map.err",
-                        "affinity_datacenter_label": pilot['affinity_datacenter_label'],                                            
-                        "affinity_machine_label":pilot['affinity_machine_label'],
-                        "input_data": [self.cmr['mapper'].get_url(), cdu.get_url() ]                    
-                        }                        
-                    i = 0                            
-                    for rdu in self.reduce_du:
-                        if i == 0:
-                            map_job_description['output_data'] = [{rdu.get_url():['*-sorted-map-part-' + str(i) ]}]
-                        else:
-                            map_job_description['output_data'].append({rdu.get_url():['*-sorted-map-part-' + str(i) ]})
-                        i = i + 1                                                                                                       
-                        
-                    self.compute_data_service.submit_compute_unit(map_job_description) 
+        for chunk_du in self.chunk_dus:
+            for chunk, info in chunk_du.list().items():
+                chunk_du_description =  { "file_urls": info['pilot_data'], 
+                                          "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],
+                                          "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'] }
+                                          
+                cdu = self.compute_data_service.submit_data_unit(chunk_du_description)
+                self.compute_data_service.wait()   
+                              
+                map_job_description = {
+                    "executable": "python " ,
+                    "arguments": [str((self.cmr['mapper'].list()).iterkeys().next()), chunk,str(self.nbr_reduces)] + self.map_arguments,
+                    "number_of_processes": self.map_number_of_processes,
+                    "output": "map.out",                                              
+                    "error": "map.err",
+                    "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],                                            
+                    "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'],
+                    "input_data": [self.cmr['mapper'].get_url(), cdu.get_url() ]                    
+                    }                        
+                i = 0                            
+                for rdu in self.reduce_du:
+                    if i == 0:
+                        map_job_description['output_data'] = [{rdu.get_url():['*-sorted-map-part-' + str(i) ]}]
+                    else:
+                        map_job_description['output_data'].append({rdu.get_url():['*-sorted-map-part-' + str(i) ]})
+                    i = i + 1                                                                                                       
+                    
+                self.compute_data_service.submit_compute_unit(map_job_description) 
         self.compute_data_service.wait()                        
         logger.info(" Map jobs Done.... ")                                                    
 
@@ -223,8 +232,8 @@ class MapReduce:
             self.compute_data_service.wait()                                                                 
             
             reduce_job_description = {
-                    "executable":  "./" + str((self.cmr['reducer'].list()).iterkeys().next()),
-                    "arguments": [ ":".join(reduce_du.list().keys()) ] + self.reduce_arguments,
+                    "executable":  "python ",
+                    "arguments": [ str((self.cmr['reducer'].list()).iterkeys().next()), ":".join(reduce_du.list().keys()) ] + self.reduce_arguments,
                     "number_of_processes": self.reduce_number_of_processes,
                     "input_data" : [self.cmr['reducer'].get_url(), reduce_du.get_url()],
                     "output": "reduce.out",
