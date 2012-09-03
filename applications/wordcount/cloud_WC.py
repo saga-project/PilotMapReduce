@@ -27,7 +27,6 @@ if __name__ == "__main__":
                     })
                     
     # Scale PMR to multiple machines just by adding multiple pmr specifications.
-    pdb.set_trace()
     mr = PilotMapReduce.MapReduce(pmr_spec,NUMBER_OF_REDUCES,COORDINATION_URL)
                     
                     
