@@ -26,9 +26,9 @@ if __name__ == "__main__":
                     
     mr.map_number_of_processes=1
     mr.reduce_number_of_processes=1
-    mr.chunk="ssh://localhost/" + os.getcwd()+'/wordcount_chunk.sh'
-    mr.mapper="ssh://localhost/" + os.getcwd()+'/wordcount_map_partition.py'
-    mr.reducer="ssh://localhost/" + os.getcwd()+'/wordcount_reduce.py'
+    mr.chunk="ssh://localhost/" + os.getcwd()+'/wc_chunk.sh'
+    mr.mapper="ssh://localhost/" + os.getcwd()+'/wc_map_partition.py'
+    mr.reducer="ssh://localhost/" + os.getcwd()+'/wc_reduce.py'
     mr.chunk_type=1
     mr.chunk_arguments=[ str(32*1024*1024) ]
     mr.map_arguments=[]
