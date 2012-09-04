@@ -37,5 +37,4 @@ if __name__ == "__main__":
     mr.map_arguments=[]
     mr.reduce_arguments=[]
     mr.output=os.getcwd()+'/output'
-    pdb.set_trace()
     mr.MapReduceMain()
