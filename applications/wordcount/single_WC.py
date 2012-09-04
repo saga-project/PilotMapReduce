@@ -15,6 +15,9 @@ if __name__ == "__main__":
                     "affinity_datacenter_label": 'eu-de-south-1',
                     "affinity_machine_label": 'mymachine-1',
                     "input":"sftp://localhost/"+os.getcwd()+'/input',
+                    # chunk_input_pd_url printed on screen on the first run of this example can be used from 2nd run 
+                    # onwards to use the existing chunked data.      
+                    # "chunk_input_pd_url":"redis://gw68.quarry.iu.teragrid.org/bigdata:pds-b011fef0-f624-11e1-8412-e61f1322a75c:pd-b0120bde-f624-11e1-8412-e61f1322a75c:du-b73363e0-f624-11e1-8412-e61f1322a75c",
                     "pd_service_url":"ssh://localhost/"+os.getcwd()+"/pilotdata",                    
                     "walltime":100,
                     "number_of_processes":8,
@@ -34,4 +37,5 @@ if __name__ == "__main__":
     mr.map_arguments=[]
     mr.reduce_arguments=[]
     mr.output=os.getcwd()+'/output'
+    pdb.set_trace()
     mr.MapReduceMain()
