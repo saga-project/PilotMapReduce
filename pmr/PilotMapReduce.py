@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('PMR')
 
 import bliss.saga as saga
-from pilot import PilotComputeService, ComputeDataService, PilotDataService, State
+from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit, State
 from mrfunctions import *
 
 class MapReduce: 
@@ -73,8 +73,11 @@ class MapReduce:
       
     def load_input_data(self):
         logger.info(" Loading input data of each pilot.... ")
-        for pilot in self.pilots:     
-            if pilot.has_key('input'):
+        for pilot in self.pilots:  
+            if pilot.has_key('chunk_input_pd_url'):
+                pd = DataUnit(du_url=pilot['chunk_input_pd_url'])
+                self.chunk_dus.append(pd)           
+            elif pilot.has_key('input'):
                 data_unit_description = { "file_urls": self.remote_files(pilot['input']) ,
                                       "affinity_datacenter_label": pilot['affinity_datacenter_label'],
                                       "affinity_machine_label": pilot['affinity_machine_label']
@@ -150,9 +153,7 @@ class MapReduce:
         logger.info(" Chunk input data on each pilot.... ")   
         i=0
         
-        for input_du in self.input_dus:
-            # Maintain chunk list per machine. affinity_datacenter_label is unique for each pilot.
-                        
+        for input_du in self.input_dus:             
             # create empty data unit for output data
             chunk_du_description = { "file_urls": [], 
                                      "affinity_datacenter_label": input_du.data_unit_description['affinity_datacenter_label'],
@@ -162,7 +163,7 @@ class MapReduce:
             chunk_du.wait()
             
             # create compute unit
-            logger.info('PD URL to reconnect - ' + str (chunk_du.get_url()) )
+            logger.info('Chunked Input PD URL to reconnect - ' + str (chunk_du.get_url()) )
             i=0
             for input in input_du.list():
                 compute_unit_description = {
