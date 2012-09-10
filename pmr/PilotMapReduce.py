@@ -34,6 +34,9 @@ class MapReduce:
         self.executables =[]
         self.reduce_du = []
         self.output_du = []
+        self.map_output_dus = []
+        self.rdu_files = []
+        self.allmapoutputfiles = {}
 
     def pstart(self):
         logger.info(" Start pilot service ")
@@ -160,7 +163,7 @@ class MapReduce:
                                      "affinity_machine_label":input_du.data_unit_description['affinity_machine_label'] }  
                                      
             chunk_du = self.compute_data_service.submit_data_unit(chunk_du_description)
-            chunk_du.wait()
+            self.compute_data_service.wait()
             
             # create compute unit
             logger.info('Chunked Input PD URL to reconnect - ' + str (chunk_du.get_url()) )
@@ -182,22 +185,12 @@ class MapReduce:
                 compute_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)            
             self.chunk_dus.append(chunk_du)            
         self.compute_data_service.wait()        
-
-
+       
         
-    def submit_map_jobs(self):
-        logger.info(" Prepare the reduce input data units.... ")                       
-        for i in range(self.nbr_reduces):
-            reduce_desc = { "file_urls": [],
-                            "affinity_datacenter_label":self.pilots[0]['affinity_datacenter_label'],
-                            "affinity_machine_label":self.pilots[0]['affinity_machine_label']        
-                          }                            
-            self.reduce_du.append(self.compute_data_service.submit_data_unit(reduce_desc))           
-        self.compute_data_service.wait()
-        logger.info(" Reduces prepared .... ")    
-               
-        logger.info(" Submit the Map jobs .... ")                       
-        for chunk_du in self.chunk_dus:
+    def submit_map_jobs(self):               
+        logger.info(" Submit the Map jobs .... ")                               
+
+        for chunk_du in self.chunk_dus:                                
             if self.chunk_type == 2:
                 grouped_files = self.group_paired(chunk_du)
                 for group_files in grouped_files:
@@ -205,7 +198,15 @@ class MapReduce:
                                               "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],
                                               "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'] }
                     cdu = self.compute_data_service.submit_data_unit(chunk_du_description)
-                    self.compute_data_service.wait()   
+                    cdu.wait()
+                    map_output_desc = { "file_urls": [],
+                                "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],
+                                "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'] }
+                               
+                    map_odu = self.compute_data_service.submit_data_unit(map_output_desc)                                              
+                    self.map_output_dus.append(map_odu)
+                    map_odu.wait()
+
                     l=cdu.list().keys()
                     l.sort()
                     map_job_description = {
@@ -215,17 +216,16 @@ class MapReduce:
                         "output": "map.out",                                              
                         "error": "map.err",
                         "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],                                            
-                        "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'],
-                        "input_data": [self.cmr['mapper'].get_url(), cdu.get_url() ]                    
+                        "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'],       
                         }                        
-                    i = 0                            
-                    for rdu in self.reduce_du:
-                        if i == 0:
-                            map_job_description['output_data'] = [{rdu.get_url():['*-sorted-map-part-' + str(i) ]}]
-                        else:
-                            map_job_description['output_data'].append({rdu.get_url():['*-sorted-map-part-' + str(i) ]})
-                        i = i + 1                                                                                                       
-                    
+                    while cdu.get_url() == None:
+                        cdu.wait()                    
+                    map_job_description['input_data'] = [self.cmr['mapper'].get_url(), cdu.get_url()]                    
+
+                    while map_odu.get_url() == None:                 
+                        map_odu.wait()
+                    map_job_description['output_data'] = [{map_odu.get_url():['*-sorted-map-part-*']}] 
+                 
                     self.compute_data_service.submit_compute_unit(map_job_description)                             
             else:                                                                            
                 for chunk, info in chunk_du.list().items():
@@ -236,7 +236,16 @@ class MapReduce:
     
                                               
                     cdu = self.compute_data_service.submit_data_unit(chunk_du_description)
-                    self.compute_data_service.wait()   
+                    cdu.wait()
+                    
+                    map_output_desc = { "file_urls": [],
+                                "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],
+                                "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'] }
+                               
+                    map_odu = self.compute_data_service.submit_data_unit(map_output_desc)                                              
+                    self.map_output_dus.append(map_odu)
+                    map_odu.wait()
+                                        
                                   
                     map_job_description = {
                         "executable": "python " ,
@@ -245,22 +254,41 @@ class MapReduce:
                         "output": "map.out",                                              
                         "error": "map.err",
                         "affinity_datacenter_label": chunk_du.data_unit_description['affinity_datacenter_label'],                                            
-                        "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'],
-                        "input_data": [self.cmr['mapper'].get_url(), cdu.get_url() ]                    
-                        }                        
-                    i = 0                            
-                    for rdu in self.reduce_du:
-                        if i == 0:
-                            map_job_description['output_data'] = [{rdu.get_url():['*-sorted-map-part-' + str(i) ]}]
-                        else:
-                            map_job_description['output_data'].append({rdu.get_url():['*-sorted-map-part-' + str(i) ]})
-                        i = i + 1                                                                                                       
-                        
+                        "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'],                                                                                             
+                        }
+                      
+                    while cdu.get_url() == None:
+                        logger.info("Chunk DU is Noneeeee ")
+                        cdu.wait()                    
+                    map_job_description['input_data'] = [self.cmr['mapper'].get_url(), cdu.get_url()]                    
+
+                    while map_odu.get_url() == None:
+                        logger.info("Map output DU  is Noneeeee ")                    
+                        map_odu.wait()
+                    map['output_data'] = [{map_odu.get_url():['*-sorted-map-part-*']}] 
+                                                
                     self.compute_data_service.submit_compute_unit(map_job_description) 
         self.compute_data_service.wait()                        
         logger.info(" Map jobs Done.... ")                                                    
 
 
+    def prepare_shuffles(self):
+        for map_odu in self.map_output_dus:  
+            for mapfile, info in map_odu.list().items(): 
+                self.allmapoutputfiles[mapfile]=info['pilot_data'] 
+                
+        for i in range(int(self.nbr_reduces)):
+            reduce_files = filter(lambda k: k.split("-")[-1] == str(i) ,self.allmapoutputfiles.keys())             
+            reduce_pds=[]                    
+            for rf in reduce_files:
+                reduce_pds = reduce_pds + self.allmapoutputfiles[rf]
+            reduce_desc = { "file_urls": reduce_pds,
+                            "affinity_datacenter_label":self.pilots[0]['affinity_datacenter_label'],
+                            "affinity_machine_label":self.pilots[0]['affinity_machine_label']        
+                           }                              
+            self.reduce_du.append(self.compute_data_service.submit_data_unit(reduce_desc))                           
+        self.compute_data_service.wait() 
+        
     def submit_reduce_jobs(self):
         logger.info(" Submitting Reduce Jobs .... ")  
 
@@ -320,10 +348,14 @@ class MapReduce:
         self.submit_map_jobs()  
         et = time.time()
         logger.info(" Map time = " + str(round(et-ct,2)) + "secs" ) 
-        ct = time.time()                  
+        ct = time.time()   
+        self.prepare_shuffles()               
+        et = time.time()
+        logger.info(" shuffle time = " + str(round(et-ct,2)) + "secs" )     
+        ct = time.time()      
         self.submit_reduce_jobs()    
         et = time.time()
-        logger.info(" Reduce time = " + str(round(et-st,2)) + "secs" )         
+        logger.info(" Reduce time = " + str(round(et-ct,2)) + "secs" )         
         self.export_reduce_output()
         self.pstop()
         et=time.time()    
