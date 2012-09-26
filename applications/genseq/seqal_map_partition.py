@@ -12,19 +12,20 @@ file2=sys.argv[2]
 nbr_reduces=sys.argv[3]
 sorted_part_nbr=[]
 reference_genome = os.getenv('HOME') + "/hg/hg18.fa" 
+bwa_location = os.getenv('HOME') + "/bwa-0.5.9/bwa"
 
 f=open(file1,"r")
 part_nbr=[[] for _ in range(int(nbr_reduces))]
 
 #Map phase logic starts
-k="bwa aln " + reference_genome + " " + file1 + " > " + file1 +"-aln "
+k=bwa_location + " aln " + reference_genome + " " + file1 + " > " + file1 +"-aln "
 print "executing " + k
 os.system(k)
-k="bwa aln " + reference_genome + " " + file2 + " > " + file2 +"-aln "
+k=bwa_location + " aln " + reference_genome + " " + file2 + " > " + file2 +"-aln "
 print "executing " + k
 os.system(k)
 output_sam=os.path.split(file1)[1] + "_" + os.path.split(file2)[1] + ".sam"
-k="bwa sampe " + reference_genome + " " + file1 + "-aln" + " " + file2 + "-aln" + " " + file1 + " " + file2 +  " > " + output_sam
+k=bwa_location + " sampe " + reference_genome + " " + file1 + "-aln" + " " + file2 + "-aln" + " " + file1 + " " + file2 +  " > " + output_sam
 print "executing " + k
 os.system(k)
 output_sam_file = open(output_sam,"r")

@@ -13,21 +13,22 @@ if __name__ == "__main__":
     pmr_spec.append({
                   "pj_service_url":"ec2+ssh://aws.amazon.com/",
                   "pd_service_url":"s3://pilot-data-" + str(uuid.uuid1()),
-                  "input":'/N/u/pmantha/gen_input/1GB',
+                  "input":'/N/u/pmantha/gen_input/4GB',
                   "access_key_id": "AKIAJPGNDJRYIG5LIEUA",
+                  #"chunk_input_pd_url":"redis://gw68.quarry.iu.teragrid.org/bigdata:pds-816b20b6-fe00-11e1-b0c7-e61f1322a75c:pd-816b3218-fe00-11e1-b0c7-e61f1322a75c:du-9e4240a6-fe01-11e1-b0c7-e61f1322a75c",
+                  #"chunk_input_pd_url":"redis://gw68.quarry.iu.teragrid.org/bigdata:pds-762510ce-fad9-11e1-975f-e61f1322a75c:pd-762518c6-fad9-11e1-975f-e61f1322a75c:du-85ce672c-fada-11e1-975f-e61f1322a75c",
+                  "chunk_input_pd_url":"redis://gw68.quarry.iu.teragrid.org/bigdata:pds-73537afc-fe0d-11e1-8a19-e61f1322a75c:pd-735389e8-fe0d-11e1-8a19-e61f1322a75c:du-73fc4130-fe0f-11e1-8a19-e61f1322a75c",
                   "secret_access_key":"II1K6B1aA4I230tx5RALrd1vEp7IXuPkWu6K5fxF",
-                  "vm_id":"ami-e9aa1b80",
+                  "vm_id":"ami-6973c200",
                   "vm_ssh_username":"ubuntu",
                   "vm_ssh_keyname":"radical",
                   "vm_ssh_keyfile":"radical.pem",
-                  "vm_type":"c1.xlarge",
-                  "number_of_processes": 1,
+                  "vm_type":"m2.4xlarge",
+                  "number_of_processes": 8,
                   "vm_location":"",
                   "affinity_datacenter_label": 'us-east',
                   "affinity_machine_label": '',
                 })
-
-    # Scale PMR to multiple machines just by adding multiple pmr specifications.
     mr = PilotMapReduce.MapReduce(pmr_spec,NUMBER_OF_REDUCES,COORDINATION_URL)
                     
                     
@@ -41,5 +42,4 @@ if __name__ == "__main__":
     mr.map_arguments=[]
     mr.reduce_arguments=[]
     mr.output=os.getcwd()+'/output'
-    pdb.set_trace()
     mr.MapReduceMain()

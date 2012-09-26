@@ -14,7 +14,7 @@ if __name__ == "__main__":
                     "working_directory": os.getcwd()+'/agent',
                     "affinity_datacenter_label": 'eu-de-south-1',
                     "affinity_machine_label": 'mymachine-1',
-                    "input":'sftp://localhost/N/u/pmantha/2GB',
+                    "input":'sftp://localhost/N/u/pmantha/test',
                     "pd_service_url":"ssh://localhost/"+os.getcwd()+"/pilotdata",                    
                     "walltime":100,
                     "number_of_processes":8,
