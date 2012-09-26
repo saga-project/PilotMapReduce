@@ -3,6 +3,7 @@ import os
 import time
 import pdb
 import logging
+import bliss.saga as saga
 #FORMAT = "PMR - %(asctime)s - %(message)s"
 #logging.basicConfig(format=FORMAT,level=logging.INFO,datefmt='%H:%M:%S')
 logging.basicConfig(level=logging.INFO)
@@ -32,11 +33,13 @@ class MapReduce:
         self.input_dus = []
         self.chunk_dus = []
         self.executables =[]
-        self.reduce_du = []
+        self.reduce_du = {}
         self.output_du = []
         self.map_output_dus = []
         self.rdu_files = []
         self.allmapoutputfiles = {}
+        self.cloudpilot = None
+        self.finalpilot = None
 
     def pstart(self):
         logger.info(" Start pilot service ")
@@ -56,6 +59,8 @@ class MapReduce:
             ## cloud specific attributes
             if pilot.has_key('access_key_id'):
                 pd_desc["access_key_id"] = pilot['access_key_id']
+                self.cloudpilot = pilot
+                self.finalpilot = pilot
             if pilot.has_key('secret_access_key'):
                 pd_desc["secret_access_key"] = pilot['secret_access_key']
                 
@@ -95,17 +100,29 @@ class MapReduce:
         chunk_unit_description = { "file_urls": [self.chunk],
                                    "affinity_datacenter_label": self.pilots[0]['affinity_datacenter_label'],
                                    "affinity_machine_label": self.pilots[0]['affinity_machine_label']}        
+        if self.cloudpilot is not None:
+            chunk_unit_description['affinity_datacenter_label'] = self.cloudpilot['affinity_datacenter_label']
+            chunk_unit_description['affinity_machine_label'] = self.cloudpilot['affinity_machine_label']
                                    
         self.cmr['chunk'] = self.compute_data_service.submit_data_unit(chunk_unit_description) 
         
         mapper_unit_description = { "file_urls": [self.mapper],
                                    "affinity_datacenter_label": self.pilots[0]['affinity_datacenter_label'],
-                                   "affinity_machine_label": self.pilots[0]['affinity_machine_label']}                                               
+                                   "affinity_machine_label": self.pilots[0]['affinity_machine_label']} 
+                                   
+        if self.cloudpilot is not None:
+            mapper_unit_description['affinity_datacenter_label'] = self.cloudpilot['affinity_datacenter_label']
+            mapper_unit_description['affinity_machine_label'] = self.cloudpilot['affinity_machine_label']
+                                                                                             
         self.cmr['mapper']=self.compute_data_service.submit_data_unit(mapper_unit_description) 
         
         reducer_unit_description = { "file_urls": [self.reducer],
                                    "affinity_datacenter_label": self.pilots[0]['affinity_datacenter_label'],
                                    "affinity_machine_label": self.pilots[0]['affinity_machine_label']} 
+
+        if self.cloudpilot is not None:
+            reducer_unit_description['affinity_datacenter_label'] = self.cloudpilot['affinity_datacenter_label']
+            reducer_unit_description['affinity_machine_label'] = self.cloudpilot['affinity_machine_label']                                   
                                            
         self.cmr['reducer']=self.compute_data_service.submit_data_unit(reducer_unit_description) 
         
@@ -135,8 +152,10 @@ class MapReduce:
                 pilot_job_desc['vm_ssh_username']=pilot['vm_ssh_username']
                 pilot_job_desc['vm_ssh_keyname']=pilot['vm_ssh_keyname']
                 pilot_job_desc['vm_ssh_keyfile']=pilot['vm_ssh_keyfile']
-                pilot_job_desc['vm_type']=pilot['vm_type']                
-                                                              
+                pilot_job_desc['vm_type']=pilot['vm_type']  
+                
+            if pilot.has_key('final') and self.cloudpilot is None:
+                self.finalpilot = pilot                                                              
                                                               
             self.pilot_compute_service.create_pilot(pilot_compute_description=pilot_job_desc)
             logger.info( "Pilot on " + str(pilot['pj_service_url']) + " submitted .... ")
@@ -276,42 +295,53 @@ class MapReduce:
         for map_odu in self.map_output_dus:  
             for mapfile, info in map_odu.list().items(): 
                 self.allmapoutputfiles[mapfile]=info['pilot_data'] 
-                
+           
         for i in range(int(self.nbr_reduces)):
+            self.reduce_du[i]=[]
             reduce_files = filter(lambda k: k.split("-")[-1] == str(i) ,self.allmapoutputfiles.keys())             
             reduce_pds=[]                    
             for rf in reduce_files:
                 reduce_pds = reduce_pds + self.allmapoutputfiles[rf]
-            reduce_desc = { "file_urls": reduce_pds,
-                            "affinity_datacenter_label":self.pilots[0]['affinity_datacenter_label'],
-                            "affinity_machine_label":self.pilots[0]['affinity_machine_label']        
-                           }                              
-            self.reduce_du.append(self.compute_data_service.submit_data_unit(reduce_desc))                           
+            
+            urls=[rp.split(':')[0] for rp in reduce_pds ]
+            urls=list(set(urls))
+            
+            for url in urls:
+                filtered_reduce_pds=[l for l in reduce_pds if l.startswith(url)]
+                if url=='ssh' and self.cloudpilot is not None:
+                    filtered_reduce_pds=[saga.Url(l).path for l in filtered_reduce_pds]          
+                if self.finalpilot is None:
+                    self.finalpilot = self.pilots[0]    
+                reduce_desc = { "file_urls": filtered_reduce_pds,
+                                "affinity_datacenter_label":self.finalpilot['affinity_datacenter_label'],
+                                "affinity_machine_label":self.finalpilot['affinity_machine_label']        
+                              }     
+                   
+                self.reduce_du[i]=self.reduce_du[i] + [self.compute_data_service.submit_data_unit(reduce_desc)]                           
         self.compute_data_service.wait() 
         
     def submit_reduce_jobs(self):
         logger.info(" Submitting Reduce Jobs .... ")  
 
         i = 0
-        for reduce_du in self.reduce_du:            
+        for reduce_du in self.reduce_du.values():            
             #print reduce_du.data_unit_description
             output_desc = { "file_urls": [],
-                "affinity_datacenter_label": reduce_du.data_unit_description['affinity_datacenter_label'],
-                "affinity_machine_label": reduce_du.data_unit_description['affinity_machine_label'] 
+                "affinity_datacenter_label": self.finalpilot['affinity_datacenter_label'],
+                "affinity_machine_label": self.finalpilot['affinity_machine_label']
                 } 
 
             self.output_du.append(self.compute_data_service.submit_data_unit(output_desc))
-            self.compute_data_service.wait()                                                                 
-            
+            self.compute_data_service.wait()           
             reduce_job_description = {
                     "executable":  "python ",
-                    "arguments": [ str((self.cmr['reducer'].list()).iterkeys().next()), ":".join(reduce_du.list().keys()) ] + self.reduce_arguments,
+                    "arguments": [ str((self.cmr['reducer'].list()).iterkeys().next())] + [ ":".join(k.list().keys()) for k in reduce_du ] + self.reduce_arguments,
                     "number_of_processes": self.reduce_number_of_processes,
-                    "input_data" : [self.cmr['reducer'].get_url(), reduce_du.get_url()],
+                    "input_data" : [self.cmr['reducer'].get_url()] + [k.get_url() for k in reduce_du ],
                     "output": "reduce.out",
                     "error": "reduce.err",
-                    "affinity_datacenter_label": reduce_du.data_unit_description['affinity_datacenter_label'],
-                    "affinity_machine_label": reduce_du.data_unit_description['affinity_machine_label'],
+                    "affinity_datacenter_label": self.finalpilot['affinity_datacenter_label'],
+                    "affinity_machine_label": self.finalpilot['affinity_machine_label'],
                     "output_data": [{self.output_du[i].get_url():['reduce-' + str(i) ]}]
                 }   
             self.compute_data_service.submit_compute_unit(reduce_job_description)
