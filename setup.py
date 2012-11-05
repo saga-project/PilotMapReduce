@@ -81,9 +81,8 @@ setup_args = {
         'Operating System :: Unix'
         ],
 
-    'packages': [
-        "pmr","applications"
-    ],
+    'packages': [ "pmr"],
+    'include_package_data':True,
     'scripts': scripts,
     # mention data_files, even if empty, so install_data is called and
     # VERSION gets copied
