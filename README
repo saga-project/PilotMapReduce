@@ -1,0 +1,21 @@
+Pilot-MapReduce (PMR) is a Pilot-based implementation of the MapReduce programming model. By decoupling job scheduling and monitoring from the resource management using Pilot-based abstraction, PMR can efficiently re-use the resource management and late-binding capabilities of PilotJob and PilotData. PMR exposes an easy-to-use interface, which provides the complete functionality needed by any MapReduce algorithm, while hiding the more complex functionality, such as chunking of the input, sorting the intermediate results, managing and coordinating the map & reduce tasks, etc., which are implemented by the framework.
+
+PMR is based on Pilot abstractions for both compute (Pilot-Jobs) and data (Pilot-Data): it utilizes Pilot-Jobs to manage the map and reduce phase computations, and Pilot-Data to shuffle intermediate data using parallel data transfers. 
+
+# Software Pre-Requisites
+Virtual environment for python packages
+
+# Installation
+PMR is available as a PyPi package. 
+
+ easy_install  PilotMapReduce
+
+# WordCount Execution
+
+  cd PilotMapReduce/applications/wordcount
+  mkdir agent
+  Execute the application using python single_WC.py
+
+# Publication
+The work related to Pilot-MapReduce is published and can be accessed at http://dl.acm.org/citation.cfm?id=2287020
+
