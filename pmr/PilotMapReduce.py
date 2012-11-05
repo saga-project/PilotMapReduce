@@ -284,7 +284,7 @@ class MapReduce:
                     while map_odu.get_url() == None:
                         logger.info("Map output DU  is Noneeeee ")                    
                         map_odu.wait()
-                    map['output_data'] = [{map_odu.get_url():['*-sorted-map-part-*']}] 
+                    map_job_description['output_data'] = [{map_odu.get_url():['*-sorted-map-part-*']}] 
                                                 
                     self.compute_data_service.submit_compute_unit(map_job_description) 
         self.compute_data_service.wait()                        
