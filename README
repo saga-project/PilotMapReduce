@@ -6,16 +6,16 @@ PMR is based on Pilot abstractions for both compute (Pilot-Jobs) and data (Pilot
 Virtual environment for python packages
 
 # Installation
-PMR is available as a PyPi package. 
+PMR is available as a PyPi package. It can be installed as
 
- easy_install  PilotMapReduce
+easy_install PilotMapReduce
 
 # WordCount Execution
 
+  git clone git://github.com/saga-project/PilotMapReduce.git
   cd PilotMapReduce/applications/wordcount
   mkdir agent
   Execute the application using python single_WC.py
 
 # Publication
 The work related to Pilot-MapReduce is published and can be accessed at http://dl.acm.org/citation.cfm?id=2287020
-
