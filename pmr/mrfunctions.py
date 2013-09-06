@@ -2,6 +2,7 @@ import saga
 import sys
 import pdb
 import os
+from pudb import set_interrupt_handler; set_interrupt_handler()
 
 class mrfunctions:
     

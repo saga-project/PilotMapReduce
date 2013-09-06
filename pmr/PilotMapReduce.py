@@ -3,13 +3,14 @@ import os
 import time
 import pdb
 import logging
-import saga
+import saga 
+from pudb import set_interrupt_handler; set_interrupt_handler()
 #FORMAT = "PMR - %(asctime)s - %(message)s"
 #logging.basicConfig(format=FORMAT,level=logging.INFO,datefmt='%H:%M:%S')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('PMR')
 
-import saga
+import  saga
 from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit, State
 from mrfunctions import *
 
@@ -76,8 +77,8 @@ class MapReduce:
             return map(lambda i:input.get_path()+"/"+i, dir.list() ) 
         else:
             dir = saga.filesystem.Directory(input) 
-            input.scheme = "ssh"            
-            return map(lambda i:str(input)+"/"+i, dir.list() )             
+            input.scheme = "ssh"          
+            return map(lambda i:str(input)+"/"+str(i), dir.list())             
       
     def load_input_data(self):
         logger.info(" Loading input data of each pilot.... ")
@@ -287,6 +288,7 @@ class MapReduce:
                     map_job_description['output_data'] = [{map_odu.get_url():['*-sorted-map-part-*']}] 
                                                 
                     self.compute_data_service.submit_compute_unit(map_job_description) 
+        
         self.compute_data_service.wait()                        
         logger.info(" Map jobs Done.... ")                                                    
 
@@ -363,7 +365,7 @@ class MapReduce:
 
     def MapReduceMain(self):
         st=time.time()                        
-        #import pdb;pdb.set_trace();
+        import pdb;
         self.pstart()
         self.start_pilot_datas()
         self.load_input_data()        
@@ -377,6 +379,7 @@ class MapReduce:
         logger.info(" Chunk time = " + str(round(et-ct,2)) + "secs" ) 
         ct = time.time()                           
         self.submit_map_jobs()  
+        #pdb.set_trace();
         et = time.time()
         logger.info(" Map time = " + str(round(et-ct,2)) + "secs" ) 
         ct = time.time()   
