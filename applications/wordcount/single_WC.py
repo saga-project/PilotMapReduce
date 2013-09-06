@@ -2,6 +2,8 @@ import pmr
 import os
 from pmr import PilotMapReduce
 import pdb
+import saga
+from pudb import set_interrupt_handler; set_interrupt_handler()
 
 COORDINATION_URL="redis://ILikeBigJob_wITH-REdIS@gw68.quarry.iu.teragrid.org:6379"
 NUMBER_OF_REDUCES=8

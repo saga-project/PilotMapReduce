@@ -3,13 +3,13 @@ import os
 import time
 import pdb
 import logging
-import bliss.saga as saga
+import saga
 #FORMAT = "PMR - %(asctime)s - %(message)s"
 #logging.basicConfig(format=FORMAT,level=logging.INFO,datefmt='%H:%M:%S')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('PMR')
 
-import bliss.saga as saga
+import saga
 from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit, State
 from mrfunctions import *
 
@@ -363,6 +363,7 @@ class MapReduce:
 
     def MapReduceMain(self):
         st=time.time()                        
+        #import pdb;pdb.set_trace();
         self.pstart()
         self.start_pilot_datas()
         self.load_input_data()        
