@@ -19,3 +19,5 @@ easy_install PilotMapReduce
 
 # Publication
 The work related to Pilot-MapReduce is published and can be accessed at http://dl.acm.org/citation.cfm?id=2287020
+
+Added SAGA-Python support
