@@ -81,7 +81,7 @@ setup_args = {
         'Operating System :: Unix'
         ],
 
-    'packages': [ "pmr"],
+    'packages': [ "pmr","pimr","pimr.clustering"],
     'include_package_data':True,
     'scripts': scripts,
     # mention data_files, even if empty, so install_data is called and

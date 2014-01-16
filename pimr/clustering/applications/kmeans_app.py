@@ -7,7 +7,7 @@ if __name__ == "__main__":
     pimrSpec=[]
 
     pimrSpec.append({ # Machine specific parameters
-                    "pj_service_url": 'pbs://sierra.futuregrid.org',
+                    "pj_service_url": 'pbs+ssh://sierra.futuregrid.org',
                     "working_directory": os.getcwd()+'/agent',
                     "affinity_datacenter_label": 'eu-de-south-1',
                     "affinity_machine_label": 'mymachine-1',
@@ -26,10 +26,11 @@ if __name__ == "__main__":
     mapProcs = 1
     reduceProcs = 1    
     #nbrPoints = 1677721
-    #nbrPoints = 5
+    nbrPoints = 5
+    nbrIterations = 3
                     
     # Scale PIMR to multiple machines just by adding multiple pimr specifications.        
-    pimr = kmeans.kmeans(pimrSpec, COORDINATION_URL, NUMBER_OF_CLUSTERS, convergeDist, mapProcs, reduceProcs, nbrPoints, initCenter)
+    pimr = kmeans.kmeans(pimrSpec, COORDINATION_URL, NUMBER_OF_CLUSTERS, convergeDist, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations)
     pimr.run()
     
     

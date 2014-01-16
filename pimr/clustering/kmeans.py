@@ -25,14 +25,17 @@ def sortPoints(centersFile):
 
 def average(points):
     numVectors = len(points)
-    out = np.array(points[0])
-    for i in range(1, numVectors):
-        out += points[i]
-    out = out / numVectors
-    return out
+    if numVectors > 0:
+        out = np.array(points[0])
+        for i in range(1, numVectors):
+            out += points[i]
+        out = out / numVectors
+        return out
+    else:
+        return np.array([0,0])
 
 class kmeans:
-    def __init__(self, pmrSpec, coordinationUrl, nbrClusters, delta, mapProcs, reduceProcs, nbrPoints, initCenter):
+    def __init__(self, pmrSpec, coordinationUrl, nbrClusters, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
         self.pmrSpec = pmrSpec
         self.nbrClusters = nbrClusters
         self.delta = delta
@@ -42,6 +45,7 @@ class kmeans:
         self.centroid = initCenter
         self.tempDist = float('Inf')
         self.nbrPoints = nbrPoints
+        self.nbrIterations=nbrIterations
         logger.info(" Initilalized Pilot-Iterative MapReduce ")
 
     def run(self):            
@@ -49,9 +53,9 @@ class kmeans:
         mr = PilotMapReduce.MapReduce(self.pmrSpec, self.nbrClusters, self.coordinationUrl)
         mr.map_number_of_processes=self.mapProcs
         mr.reduce_number_of_processes=self.reduceProcs
-        mr.chunk="ssh://localhost/" + os.getcwd()+'/kmeans_chunk.sh'
-        mr.mapper="ssh://localhost/" + os.getcwd()+'/kmeans_map_partition.py'        
-        mr.reducer="ssh://localhost/" + os.getcwd()+'/kmeans_reduce.py'
+        mr.chunk="ssh://localhost/" + os.getcwd()+'/../kmeans_chunk.sh'
+        mr.mapper="ssh://localhost/" + os.getcwd()+'/../kmeans_map_partition.py'        
+        mr.reducer="ssh://localhost/" + os.getcwd()+'/../kmeans_reduce.py'
         mr.chunk_type=1
         mr.chunk_arguments=[self.nbrPoints]
         initCenterFileName = os.path.basename(self.centroid['file_urls'][0])
@@ -61,8 +65,10 @@ class kmeans:
         oldVectors = map(parseVector, temp)        
         mr.reduce_arguments=[]
         mr.output=os.getcwd()+'/output'
-        logger.info(" Initilalized Pilot-MapReduce ")        
-        while self.tempDist > self.delta:
+        logger.info(" Initilalized Pilot-MapReduce ") 
+        iterations = 1     
+        while self.tempDist > self.delta and iterations <= self.nbrIterations:
+            logger.info("Iteration - %s, MaxIterations - %s " % (iterations , self.nbrIterations))
             itst = time.time()
             logger.info("Temp Distance - %s, Delta - %s" % (self.tempDist,self.delta) )
             mr.iterativeInput  = self.centroid   
@@ -78,12 +84,13 @@ class kmeans:
             et = time.time()
             
             logger.info("MapReduce is Done. Total time taken is " + str(round(et-st,2)) + "secs")
-                                    
+
             newCenterFile = mr.output+'/centers.txt'
             with open(newCenterFile, 'w') as centerWrite:
                 for reduceOut in os.listdir(mr.output):
                     newCentroid=np.array([0,0])
                     if reduceOut.startswith("reduce-"):
+                        logger.info("processing file %s " % reduceOut)
                         outFile=open(os.path.join(mr.output,reduceOut),'r')
                         pVectors = map(parseVectorLine, outFile)
                         newCentroid = newCentroid + average(pVectors)
@@ -95,10 +102,11 @@ class kmeans:
             newVectors = map(parseVector, temp)  
             logging.info("Old centers - %s, new centers - %s" % ( str(oldVectors),str(newVectors)))
             self.tempDist = sum(np.sum((x - y) ** 2) for x,y in zip(oldVectors, newVectors)) 
-            mr.isIter = True            
+            mr.isIter = True  
+            iterations = iterations + 1          
             oldVectors = newVectors
             itet = time.time()
-            logger.info("Total iteration time - " + str(round(itet-itst,2)) + "secs")
+            logger.info("Iteration %s time - %s seconds" % (str(iterations), str( round(itet-itst,2) ) ))
             
         mr.pstop()
         
