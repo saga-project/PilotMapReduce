@@ -5,7 +5,7 @@ import pdb
 import logging
 import saga 
 from pudb import set_interrupt_handler; set_interrupt_handler()
-FORMAT = "PMR - %(asctime)s - %(message)s"
+FORMAT = "%(asctime)s - %(message)s"
 logging.basicConfig(format=FORMAT,level=logging.INFO,datefmt='%H:%M:%S')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('PMR')
@@ -28,6 +28,7 @@ class MapReduce:
         self.cmr={}
         self.chunk_type=1
         self.chunk_arguments=[]
+        self.chunk_cus =[]
         self.map_arguments=[]
         self.pilot_wd = {}
         self.reduce_arguments=[]  
@@ -45,6 +46,19 @@ class MapReduce:
         self.iterativeInput = None
         self.iterdu = None
         self.isIter = False
+        
+    def check_states(self, jobs):
+        try:
+            self.compute_data_service.wait()           
+            jStates = map(lambda i: i.get_state(), jobs)
+            logger.info(" No of CU/DU Units - %s, States - %s" % (str(len(jobs)), str(jStates)))
+            if 'Failed' in jStates:
+                logging.info("Some of the tasks failed.. please check.. Terminating pilot service")
+                self.pstop()
+                sys.exit(0)
+        except:
+                self.pstop()
+                sys.exit(0)
 
         
     def pstart(self):
@@ -104,8 +118,7 @@ class MapReduce:
                                     }
                 # submit pilot data to a pilot store 
                 self.input_dus.append(self.compute_data_service.submit_data_unit(data_unit_description))
-        self.compute_data_service.wait()           
-        
+        self.check_states(self.input_dus)
 
         
     def load_chunk_mapper_reducer(self):
@@ -141,7 +154,9 @@ class MapReduce:
         self.cmr['reducer']=self.compute_data_service.submit_data_unit(reducer_unit_description) 
         
         # submit pilot data to a pilot store 
-        self.compute_data_service.wait()   
+        # self.compute_data_service.wait()           
+        self.check_states(self.cmr.values())
+
         
     def load_iterative_data(self):
         ## Load iterative input data if present
@@ -150,7 +165,8 @@ class MapReduce:
             self.iterdu = self.compute_data_service.submit_data_unit(self.iterativeInput) 
         
             # submit pilot data to a pilot store 
-            self.compute_data_service.wait() 
+            # self.compute_data_service.wait() 
+            self.check_states([self.iterdu])
         pass
 
     def get_iterative_du(self):        
@@ -229,9 +245,10 @@ class MapReduce:
                     "input_data":[self.cmr['chunk'].get_url(),input_du.get_url()] 
                     } 
                 i = i + 1                                                                                          
-                compute_unit = self.compute_data_service.submit_compute_unit(compute_unit_description)            
+                self.chunk_cus.append(self.compute_data_service.submit_compute_unit(compute_unit_description))
             self.chunk_dus.append(chunk_du)            
-        self.compute_data_service.wait()        
+
+        self.check_states(self.chunk_cus + self.chunk_dus)
        
         
     def submit_map_jobs(self):               
@@ -293,9 +310,10 @@ class MapReduce:
                                
                     self.map_output_dus.append(self.compute_data_service.submit_data_unit(map_output_desc))  
                                       
-                self.compute_data_service.wait()
+                self.check_states(self.cdus + self.map_output_dus)
 
 
+                map_jobs=[]
                 for cdu in self.cdus:
                     logger.info("DU - %s - File name - %s  " % (str(cdu), str(cdu.list().iterkeys().next()) ))
                     st = time.time()
@@ -313,12 +331,12 @@ class MapReduce:
                     if self.iterdu:
                         map_job_description['input_data'].append(self.iterdu.get_url())                                    
                     map_job_description['output_data'] = [{self.map_output_dus[k].get_url():['*-sorted-map-part-*']}]                      
-                    self.compute_data_service.submit_compute_unit(map_job_description) 
+                    map_jobs.append(self.compute_data_service.submit_compute_unit(map_job_description))
                     logger.info("Map compute unit.. submitted and took %s secs" % str(round(time.time()-st,2)))
                     k=k+1
 
         logger.info("Total number of map jobs submitted " + str(k)) 
-        self.compute_data_service.wait()                                
+        self.check_states(map_jobs)
 
 
     def prepare_shuffles(self):

@@ -103,11 +103,10 @@ class kmeans:
             logging.info("Old centers - %s, new centers - %s" % ( str(oldVectors),str(newVectors)))
             self.tempDist = sum(np.sum((x - y) ** 2) for x,y in zip(oldVectors, newVectors)) 
             mr.isIter = True  
-            iterations = iterations + 1          
             oldVectors = newVectors
             itet = time.time()
             logger.info("Iteration %s time - %s seconds" % (str(iterations), str( round(itet-itst,2) ) ))
-            
+            iterations = iterations + 1                      
         mr.pstop()
         
                     

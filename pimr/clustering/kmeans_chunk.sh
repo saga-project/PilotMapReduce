@@ -2,5 +2,5 @@
 
 input=$1
 h=`hostname`
-
-split -d -l $2  $1 $h$input'-chunk-'
+ 
+split -a 5 -l $2  $1 $h$input'-chunk-'
