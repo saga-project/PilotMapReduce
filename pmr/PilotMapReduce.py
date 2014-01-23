@@ -14,7 +14,7 @@ import  saga
 from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit, State
 from mrfunctions import *
 
-class MapReduce: 
+class MapReduce:     
     def __init__(self,pilots,nbr_reduces,coordination_url):
         self.pilots = pilots
         self.nbr_reduces = nbr_reduces
@@ -173,35 +173,10 @@ class MapReduce:
         return self.iterdu
         
     def start_pilot_jobs(self):
-        logger.info(" Starting Pilot Jobs .... ")   
-        for pilot in self.pilots:
-            pilot_job_desc = {"service_url":pilot['pj_service_url'],                                                                                            
-                              "affinity_datacenter_label": pilot['affinity_datacenter_label'],
-                              "affinity_machine_label":pilot['affinity_machine_label'] }
-            if pilot.has_key('number_of_processes'):
-                pilot_job_desc['number_of_processes'] = pilot['number_of_processes']
-            if pilot.has_key('walltime'):
-                pilot_job_desc['walltime']=pilot['walltime']
-            if pilot.has_key('working_directory'):
-                pilot_job_desc['working_directory']=pilot['working_directory']
-            if pilot.has_key('allocation'):
-                pilot_job_desc['allocation']=pilot['allocation']
-            if pilot.has_key('queue'):
-                pilot_job_desc['queue']=pilot['queue']
-            if pilot.has_key('access_key_id'):
-                pilot_job_desc['access_key_id']=pilot['access_key_id']
-                pilot_job_desc['secret_access_key']=pilot['secret_access_key']                  
-                pilot_job_desc['vm_id']=pilot['vm_id']                              
-                pilot_job_desc['vm_ssh_username']=pilot['vm_ssh_username']
-                pilot_job_desc['vm_ssh_keyname']=pilot['vm_ssh_keyname']
-                pilot_job_desc['vm_ssh_keyfile']=pilot['vm_ssh_keyfile']
-                pilot_job_desc['vm_type']=pilot['vm_type']  
-                
-            if pilot.has_key('final') and self.cloudpilot is None:
-                self.finalpilot = pilot                                                              
-                                                              
-            self.pilot_compute_service.create_pilot(pilot_compute_description=pilot_job_desc)
-            logger.info( "Pilot on " + str(pilot['pj_service_url']) + " submitted .... ")
+        logger.info(" Starting Pilot Jobs .... ")               
+        for pilot in self.pilots:                                                              
+            self.pilot_compute_service.create_pilot(pilot_compute_description=pilot)
+            logger.info( "Pilot on " + str(pilot['service_url']) + " submitted .... ")
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
     
     def group_paired(self,chunk_du):
