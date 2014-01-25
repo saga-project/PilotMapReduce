@@ -4,18 +4,16 @@ import time
 import pdb
 import logging
 import saga 
-from pudb import set_interrupt_handler; set_interrupt_handler()
 FORMAT = "%(asctime)s - %(message)s"
 logging.basicConfig(format=FORMAT,level=logging.INFO,datefmt='%H:%M:%S')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('PMR')
 
-import  saga
 from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit, State
 from mrfunctions import *
 
 class MapReduce:     
-    def __init__(self,pilots,nbr_reduces,coordination_url):
+    def __init__(self, pilots, nbr_reduces, coordination_url ):
         self.pilots = pilots
         self.nbr_reduces = nbr_reduces
         self.coordination_url = coordination_url 
@@ -52,18 +50,27 @@ class MapReduce:
             self.compute_data_service.wait()           
             jStates = map(lambda i: i.get_state(), jobs)
             logger.info(" No of CU/DU Units - %s, States - %s" % (str(len(jobs)), str(jStates)))
-            if 'Failed' in jStates:
+            self.print_job_details(jobs)
+            """if 'Failed' in jStates:
                 logging.info("Some of the tasks failed.. please check.. Terminating pilot service")
                 self.pstop()
-                sys.exit(0)
+                sys.exit(0)"""
         except:
                 self.pstop()
                 sys.exit(0)
+                
+    def print_job_details(self,jobs):
+        try:
+            jDetails = map(lambda i: i.get_details(), jobs)
+            for i in jDetails:
+                logger.info("Task Details - %s" %  i)
+        except:
+            pass
+                
 
         
     def pstart(self):
-        """ Start Pilot compute and data Service """
-        
+        """ Start Pilot compute and data Service """        
         logger.info(" Start pilot service ")
         self.compute_data_service=ComputeDataService()    
         self.pilot_compute_service=PilotComputeService(self.coordination_url)
@@ -92,6 +99,7 @@ class MapReduce:
             self.pilot_data_service.create_pilot( pilot_data_description=pd_desc )
         self.compute_data_service.add_pilot_data_service(self.pilot_data_service)
         logger.debug(" Pilot datas started .... ")
+
 
     def remote_files(self, input):
         """ Create list of remote files used to create DU's """ 
@@ -174,7 +182,8 @@ class MapReduce:
         
     def start_pilot_jobs(self):
         logger.info(" Starting Pilot Jobs .... ")               
-        for pilot in self.pilots:                                                              
+        for pilot in self.pilots:
+            pilot['service_url'] = pilot['pj_service_url']                                                              
             self.pilot_compute_service.create_pilot(pilot_compute_description=pilot)
             logger.info( "Pilot on " + str(pilot['service_url']) + " submitted .... ")
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
@@ -193,7 +202,6 @@ class MapReduce:
     def chunk_input_data(self):
         logger.info(" Chunk input data on each pilot.... ")   
         i=0
-        
         for input_du in self.input_dus:             
             # create empty data unit for output data
             chunk_du_description = { "file_urls": [], 
@@ -432,3 +440,4 @@ class MapReduce:
         
         
         
+
