@@ -325,8 +325,6 @@ class MapReduce:
 
                 map_jobs=[]
                 map_st = time.time()
-                mapper_script = str((self.cmr['mapper'].list()).iterkeys().next())
-                mapper_url = self.cmr['mapper'].get_url()
                 for cdu in self.cdus:
                     chunk_fn = str((cdu.list()).iterkeys().next())
                     logger.info("DU - %s - File name - %s  " % (str(cdu), chunk_fn ))
