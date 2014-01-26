@@ -200,7 +200,9 @@ class MapReduce:
         return self.iterdu
         
     def start_pilot_jobs(self):
-        logger.info(" Starting Pilot Jobs .... ")               
+        logger.info(" Starting Pilot Jobs .... ")
+        if self.finalpilot is None:
+            self.finalpilot = self.pilots[0]                  
         for pilot in self.pilots:
             pilot['service_url'] = pilot['pj_service_url']                                                              
             self.pilot_compute_service.create_pilot(pilot_compute_description=pilot)
@@ -371,9 +373,7 @@ class MapReduce:
             for url in urls:
                 filtered_reduce_pds=[l for l in reduce_pds if l.startswith(url)]
                 if url=='ssh' and self.cloudpilot is not None:
-                    filtered_reduce_pds=[saga.Url(l).path for l in filtered_reduce_pds]          
-                if self.finalpilot is None:
-                    self.finalpilot = self.pilots[0]    
+                    filtered_reduce_pds=[saga.Url(l).path for l in filtered_reduce_pds]           
                 reduce_desc = { "file_urls": filtered_reduce_pds,
                                 "affinity_datacenter_label":self.finalpilot['affinity_datacenter_label'],
                                 "affinity_machine_label":self.finalpilot['affinity_machine_label']        
