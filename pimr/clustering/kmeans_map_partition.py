@@ -31,7 +31,7 @@ def closestPoint(p, centers):
     return bestIndex    
 
 if __name__ == "__main__":
-    # default parameters passed to map function
+    # default parameters passed to map function 
     chunkFileNm = sys.argv[1]
     nbrReduces=int(sys.argv[2])
     sortedPartitionNbr=[]
