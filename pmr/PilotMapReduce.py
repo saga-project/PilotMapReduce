@@ -10,7 +10,6 @@ logging.basicConfig(format=FORMAT,level=logging.INFO,datefmt='%H:%M:%S')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('PMR')
 
-import  saga
 from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit, State
 from mrfunctions import *
 
@@ -178,7 +177,7 @@ class MapReduce:
         
         # submit pilot data to a pilot store 
         # self.compute_data_service.wait()           
-        self.check_states(self.cmr.values())
+        self.check_states([cs_du,ms_du,rs_du])
         self.cs_url = cs_du.get_url()
         self.ms_url = ms_du.get_url()
         self.rs_url = rs_du.get_url()
