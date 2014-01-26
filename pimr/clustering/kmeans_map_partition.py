@@ -47,8 +47,9 @@ if __name__ == "__main__":
 	cVectors = map(parseVector, temp)
 	logger.info("Total number of datapoints/chunk is %s " % len(pVectors))
 	for point in pVectors:
-		bestIndex = closestPoint(point, cVectors)
-		partitionNbr[bestIndex].append("%s\n" % ",".join([str(x) for x in point]))
+		bestIndex = closestPoint(point, cVectors)        
+        l=hash(bestIndex)%int(nbrReduces)
+        partitionNbr[l].append("%s\n" % ",".join([str(x) for x in point]))
 		
 	for i in range(0,nbrReduces):
 		partitionName="part-"+str(i) 

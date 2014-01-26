@@ -6,16 +6,24 @@ PMR is based on Pilot abstractions for both compute (Pilot-Jobs) and data (Pilot
 Virtual environment for python packages
 
 # Installation
-PMR is available as a PyPi package. It can be installed as
-
-easy_install PilotMapReduce
+git clone git://github.com/saga-project/PilotMapReduce.git
+cd PilotMapReduce
+python setup.py install
 
 # WordCount Execution
-
-  git clone git://github.com/saga-project/PilotMapReduce.git
   cd PilotMapReduce/applications/wordcount
   mkdir agent
   Execute the application using python single_WC.py
+
+# Kmeans Execution
+  cd PilotMapReduce/pimr/clustering/applications/
+  Edit centers.txt file to add the centers.
+  Edit kmeans_app.py to provide input, pilot, MapReduce and KMeans parameters.
+    - The input currently supports csv format with points separated by ','. 
+      It support multiple dimensions. Sample input is present in input directory.
+    - Kmeans_stampede.py is stampede specific example
+  Run the app using command `python kmeans_app.py` 
+  
 
 # Publication
 The work related to Pilot-MapReduce is published and can be accessed at http://dl.acm.org/citation.cfm?id=2287020
