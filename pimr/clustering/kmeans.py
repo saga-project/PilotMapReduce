@@ -88,12 +88,11 @@ class kmeans:
             newCenterFile = mr.output+'/centers.txt'
             with open(newCenterFile, 'w') as centerWrite:
                 for reduceOut in os.listdir(mr.output):
-                    newCentroid=np.array([0,0])
                     if reduceOut.startswith("reduce-"):
                         logger.info("processing file %s " % reduceOut)
                         outFile=open(os.path.join(mr.output,reduceOut),'r')
                         pVectors = map(parseVectorLine, outFile)
-                        newCentroid = newCentroid + average(pVectors)
+                        newCentroid =  average(pVectors)
                         centerWrite.write("%s\n" % ",".join([str(x) for x in newCentroid]))
                         outFile.close()                        
             self.centroid['file_urls'][0] = newCenterFile
