@@ -27,7 +27,7 @@ def sortPoints(centersFile):
     return sorted(temp)
     
 
-def average(points):
+def average(points, dimension):
     numVectors = len(points)
     if numVectors > 0:
         out = np.array(points[0])
@@ -36,7 +36,7 @@ def average(points):
         out = out / numVectors
         return out
     else:
-        return np.array([0,0])
+        return np.array([0 for i in range(dimension)])
 
 class kmeans:
     def __init__(self, pmrSpec, coordinationUrl, nbrReduces, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
@@ -71,7 +71,9 @@ class kmeans:
         mr.map_arguments=[initCenterFileName]  
         ofh = open(initCenterFileName) 
         temp = sortPoints(ofh)
-        oldVectors = map(parseVector, temp)        
+        oldVectors = map(parseVector, temp)   
+        dimension = len(oldVectors[0])
+        
         mr.reduce_arguments=[]
         mr.output=os.getcwd()+'/output'
         logger.info("Initilalized Pilot-MapReduce ") 
@@ -98,7 +100,7 @@ class kmeans:
                         logger.info("processing file %s " % reduceOut)
                         outFile=open(os.path.join(mr.output,reduceOut),'r')
                         pVectors = map(parseVectorLine, outFile)
-                        newCentroid =  average(pVectors)
+                        newCentroid =  average(pVectors, dimension)
                         centerWrite.write("%s\n" % ",".join([str(x) for x in newCentroid]))
                         outFile.close() 
             iterDetails['merge_centroids']=round(time.time()-mgst,2)                     
