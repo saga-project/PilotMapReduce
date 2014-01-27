@@ -32,6 +32,7 @@ class MapReduce:
         self.ms_url = None
         self.rs_url = None
         self.iter_url= None
+        self.times={}
         
         self.chunk_type=1
         self.chunk_arguments=[]
@@ -299,8 +300,8 @@ class MapReduce:
                  
                     self.compute_data_service.submit_compute_unit(map_job_description)                             
             else:     
-                map_data_st = time.time()
                 iterChunk = chunk_du.list()
+                st = time.time()
                 if not self.isIter:                                                                       
                     for chunk, info in iterChunk.items():
                         dust = time.time()
@@ -309,9 +310,10 @@ class MapReduce:
                                                   "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'] }
                                                   
                         self.cdus.append(self.compute_data_service.submit_data_unit(chunk_du_description))
-                        logger.info("chunk du created and took %s secs - " % str(round(time.time() - dust)))
-                    
+                    self.check_states(self.cdus)
+                    self.times['chunk'] = self.times['chunk'] + round(time.time() - st, 2)
                 
+                st = time.time()                                    
                 for chunk, info in iterChunk.items():                    
                     dust = time.time()
                     map_output_desc = { "file_urls": [],
@@ -319,14 +321,8 @@ class MapReduce:
                                 "affinity_machine_label":chunk_du.data_unit_description['affinity_machine_label'] }
                                
                     self.map_output_dus.append(self.compute_data_service.submit_data_unit(map_output_desc))  
-                    logger.info("Map output du created and took %s secs - " % str(round(time.time() - dust)))
-                                      
-                self.check_states(self.cdus + self.map_output_dus)
-
-                logger.info("DU preparation for Map tasks took %s secs" % str(round(time.time()-map_data_st,2)))
-
+                self.check_states(self.map_output_dus)
                 map_jobs=[]
-                map_st = time.time()
                 for cdu in self.cdus:
                     chunk_fn = str((cdu.list()).iterkeys().next())
                     logger.info("DU - %s - File name - %s  " % (str(cdu), chunk_fn ))
@@ -351,11 +347,12 @@ class MapReduce:
 
         logger.info("Total number of map jobs submitted " + str(k)) 
         self.check_states(map_jobs)
-        logger.info("Only Map time took %s secs" % str(round(time.time()-map_st,2)))
+        self.times['map_phase'] = round(time.time()-st,2)
 
 
 
     def prepare_shuffles(self):
+        logger.info(" Preparing Shuffles .... ")
         for map_odu in self.map_output_dus:  
             for mapfile, info in map_odu.list().items(): 
                 self.allmapoutputfiles[mapfile]=info['pilot_data'] 
@@ -434,37 +431,36 @@ class MapReduce:
         self.compute_data_service.cancel()    
         self.pilot_compute_service.cancel()
         self.pilot_data_service.cancel()
+    
+    def get_details(self):
+        return self.times
 
     def MapReduceMain(self):
+        self.times={}
         st=time.time() 
-        if not self.isIter:
+        if not self.isIter:            
             self.pstart()
             self.start_pilot_datas()
-            self.load_input_data()        
             self.load_chunk_mapper_reducer()        
             self.start_pilot_jobs()
-            et = time.time()
-            logger.info(" Setup time = " + str(round(et-st,2)) + "secs" )
-            ct = time.time()
-            self.chunk_input_data()          
-            et = time.time()
-            logger.info(" Chunk time = " + str(round(et-ct,2)) + "secs" ) 
-        ct = time.time() 
-        self.load_iterative_data() 
-        ct = time.time()
+            self.times['setup'] = round(time.time()-st,2)
+            st = time.time()
+            self.load_input_data()        
+            self.times['input_data_load'] = round(time.time()-st,2)                  
+            st = time.time()
+            self.chunk_input_data()    
+            self.times['chunk'] = round(time.time()-st,2)                  
+        st = time.time() 
+        self.load_iterative_data()
+        self.times['iterative_data_load'] = round(time.time()-st,2)                           
         self.submit_map_jobs()  
-        et = time.time()
-        #logger.info(" Map jobs submitted.... " + str(round(et-ct,2)) + "secs")                                                    
-        et = time.time()
-        #logger.info(" Map time = " + str(round(et-ct,2)) + "secs" ) 
-        ct = time.time()   
+        st = time.time()   
         self.prepare_shuffles()  
-        et = time.time()
-        logger.info(" shuffle time = " + str(round(et-ct,2)) + "secs" )     
-        ct = time.time()      
+        self.times['shuffle_phase'] = round(time.time()-st,2) 
+        st = time.time()      
         self.submit_reduce_jobs()  
-        et = time.time()
-        logger.info(" Reduce time = " + str(round(et-ct,2)) + "secs" )         
+        self.times['reduce_phase'] = round(time.time()-st,2)
+        logger.info("Execution Times  - %s" % (self.times)) 
         self.export_reduce_output()
         """self.pstop()
         et=time.time()    

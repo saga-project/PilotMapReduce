@@ -3,6 +3,7 @@ import pdb
 import numpy as np
 import time
 import logging
+import copy
 
 
 from pmr import PilotMapReduce
@@ -19,7 +20,10 @@ def parseVectorLine(line):
 def sortPoints(centersFile):
     temp = centersFile.readlines()
     temp = [ i.strip().split(",") for i in temp ]
-    temp = [ ( float(i[0]), float(i[1]) ) for  i in temp ]    
+    tempx = []
+    for i in temp:
+        tempx.append([ float(j) for j in i ])
+    temp = [tuple(i) for i in tempx ]
     return sorted(temp)
     
 
@@ -35,9 +39,9 @@ def average(points):
         return np.array([0,0])
 
 class kmeans:
-    def __init__(self, pmrSpec, coordinationUrl, nbrClusters, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
+    def __init__(self, pmrSpec, coordinationUrl, nbrReduces, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
         self.pmrSpec = pmrSpec
-        self.nbrClusters = nbrClusters
+        self.nbrReduces = nbrReduces
         self.delta = delta
         self.coordinationUrl = coordinationUrl
         self.mapProcs = mapProcs
@@ -46,11 +50,16 @@ class kmeans:
         self.tempDist = float('Inf')
         self.nbrPoints = nbrPoints
         self.nbrIterations=nbrIterations
+        self.iterTimes = {}
         logger.info(" Initilalized Pilot-Iterative MapReduce ")
+    
+    def get_details(self):
+        return self.iterTimes
+        
 
     def run(self):            
         # Scale PMR to multiple machines just by adding multiple pmr specifications.
-        mr = PilotMapReduce.MapReduce(self.pmrSpec, self.nbrClusters, self.coordinationUrl)
+        mr = PilotMapReduce.MapReduce(self.pmrSpec, self.nbrReduces, self.coordinationUrl)
         mr.map_number_of_processes=self.mapProcs
         mr.reduce_number_of_processes=self.reduceProcs
         mr.chunk="ssh://localhost/" + os.getcwd()+'/../kmeans_chunk.sh'
@@ -65,12 +74,11 @@ class kmeans:
         oldVectors = map(parseVector, temp)        
         mr.reduce_arguments=[]
         mr.output=os.getcwd()+'/output'
-        logger.info(" Initilalized Pilot-MapReduce ") 
-        iterations = 1     
+        logger.info("Initilalized Pilot-MapReduce ") 
+        iterations = 1 
+        iterDetails={}    
         while self.tempDist > self.delta and iterations <= self.nbrIterations:
-            logger.info("Iteration - %s, MaxIterations - %s " % (iterations , self.nbrIterations))
             itst = time.time()
-            logger.info("Temp Distance - %s, Delta - %s" % (self.tempDist,self.delta) )
             mr.iterativeInput  = self.centroid   
             try:                
                 for reduceOut in os.listdir(mr.output):
@@ -79,12 +87,10 @@ class kmeans:
             except:
                 pass
             
-            st = time.time()    
             mr.MapReduceMain()
-            et = time.time()
+            iterDetails = copy.copy(mr.get_details())
             
-            logger.info("MapReduce is Done. Total time taken is " + str(round(et-st,2)) + "secs")
-
+            mgst=time.time()
             newCenterFile = mr.output+'/centers.txt'
             with open(newCenterFile, 'w') as centerWrite:
                 for reduceOut in os.listdir(mr.output):
@@ -94,7 +100,8 @@ class kmeans:
                         pVectors = map(parseVectorLine, outFile)
                         newCentroid =  average(pVectors)
                         centerWrite.write("%s\n" % ",".join([str(x) for x in newCentroid]))
-                        outFile.close()                        
+                        outFile.close() 
+            iterDetails['merge_centroids']=round(time.time()-mgst,2)                     
             self.centroid['file_urls'][0] = newCenterFile
             nfh = open(newCenterFile)
             temp = sortPoints(nfh)
@@ -104,13 +111,9 @@ class kmeans:
             mr.isIter = True  
             oldVectors = newVectors
             itet = time.time()
-            logger.info("Iteration %s time - %s seconds" % (str(iterations), str( round(itet-itst,2) ) ))
-            iterations = iterations + 1                      
+            iterDetails['iteration_time'] = round(itet-itst,2)
+            iterDetails['convergence'] = self.tempDist
+            self.iterTimes[iterations] = iterDetails
+            logger.info("Iteration Execution Times  - %s" % (self.iterTimes)) 
+            iterations = iterations + 1                                  
         mr.pstop()
-        
-                    
-                
-                
-            
-            
-            

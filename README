@@ -17,7 +17,7 @@ python setup.py install
 
 # Kmeans Execution
   cd PilotMapReduce/pimr/clustering/applications/
-  Edit centers.txt file to add the centers.
+  Edit centers.txt file to prepare the Centers DU.
   Edit kmeans_app.py to provide input, pilot, MapReduce and KMeans parameters.
     - The input currently supports csv format with points separated by ','. 
       It support multiple dimensions. Sample input is present in input directory.

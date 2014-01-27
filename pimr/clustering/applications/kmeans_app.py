@@ -33,6 +33,7 @@ if __name__ == "__main__":
     # Scale PIMR to multiple machines just by adding multiple pimr specifications.        
     pimr = kmeans.kmeans(pimrSpec, COORDINATION_URL, NUMBER_OF_REDUCES, convergeDist, mapProcs, reduceProcs, nbrPointsPerMapper, initCenter, nbrIterations)
     pimr.run()
+    pimr.get_details()
     
     
                     
