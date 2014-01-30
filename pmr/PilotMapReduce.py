@@ -353,8 +353,9 @@ class MapReduce:
 
     def prepare_shuffles(self):
         logger.info(" Preparing Shuffles .... ")
-        for map_odu in self.map_output_dus:  
-            for mapfile, info in map_odu.list().items(): 
+        for map_odu in self.map_output_dus: 
+            temp = map_odu.list() 
+            for mapfile, info in temp.items(): 
                 self.allmapoutputfiles[mapfile]=info['pilot_data'] 
            
         for i in range(int(self.nbr_reduces)):
