@@ -9,7 +9,7 @@ def closestPoint(p, centers):
     bestIndex = 0
     closest = float("+inf")
     for i in range(len(centers)):
-        dist = sum([(j-i)**2 for i,j in zip(p,centers[i]) ])
+        dist = sum([(m-k)**2 for k,m in zip(p,centers[i]) ])
         if dist < closest:
             closest = dist
             bestIndex = i
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     for point in pVectors:
         st=time.time()
         bestIndex = closestPoint(point, cVectors)                
-        mapJob.emit(bestIndex, "%s\n" % ",".join([str(x) for x in point]))        
+        mapJob.emit(bestIndex, "%s,%s\n" % (bestIndex,",".join([str(x) for x in point])))        
         logger.info("Time taken - %s" % round(time.time()-st,2))
     logger.info("Total Time taken - %s" % round(time.time()-tst,2))
     
