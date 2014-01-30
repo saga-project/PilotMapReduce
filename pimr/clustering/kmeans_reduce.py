@@ -9,7 +9,7 @@ def average(points):
         pVectors = np.array(points)
         return list(pVectors.mean(0))
     else:
-        return ''
+        return []
         
 if __name__ == "__main__":
     # Initialize Reduce job
