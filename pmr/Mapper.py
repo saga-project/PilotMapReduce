@@ -7,7 +7,7 @@ class Mapper:
         self.mapArgs = args[3:]
     
     def emit(self, key, value):
-        self.partitionNbr[key % int(self.nbrReduces)].append(value)
+        self.partitionNbr[int(key % self.nbrReduces)].append(value)
         
     def finalize(self):
         for i in range(0,self.nbrReduces):

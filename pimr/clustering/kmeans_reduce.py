@@ -1,4 +1,4 @@
-import pmr.Reducer as Reducer
+from pmr.Reducer import Reducer
 import sys
 
 if __name__ == "__main__":

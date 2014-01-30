@@ -1,6 +1,6 @@
 import time
 import sys
-import pmr.Mapper as Mapper
+from pmr.Mapper import Mapper
 import logging
 logger = logging.getLogger('MAPPER')
 import pimr.clustering.kmeans as kmeans
