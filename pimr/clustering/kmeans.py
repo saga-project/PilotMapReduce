@@ -4,6 +4,7 @@ import logging
 import copy
 import glob
 from pmr import PilotMapReduce
+import numpy as np
 from pilot import PilotComputeService, PilotDataService, ComputeDataService, State
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Iterative')
@@ -55,6 +56,7 @@ class kmeans:
         oldVectors = map(parseVector, ofh)
         ofh.close()
         oldVectors = sorted(oldVectors)
+        oldVectors = np.array(oldVectors)
         iterations = 1 
         iterDetails={}   
          
@@ -88,11 +90,12 @@ class kmeans:
                               
             self.centroid['file_urls'][0] = newCenterFile
             nfh = open(newCenterFile)
-            newVectors = map(parseVector, nfh)
+            newVectors = map(parseVector, nfh)            
             nfh.close()  
-            newVectors = sorted(newVectors)            
+            newVectors = sorted(newVectors)   
+            newVectors = np.array(newVectors)         
             
-            self.tempDist = sum([(m-k)**2 for k,m in zip(oldVectors, newVectors) ])
+            self.tempDist = sum(np.sum((x - y) ** 2) for x,y in zip(oldVectors, newVectors)) 
             mr.isIter = True  
             oldVectors = newVectors
             itet = time.time()
