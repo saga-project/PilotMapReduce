@@ -14,6 +14,7 @@ def parseVector(line):
     return [float(x) for x in line.split(',')]
 
 CENTER_FILE_PREFIX = "Centers-"
+REDUCE_FILE_PREFIX = "reduce-"
 
 class kmeans:
     def __init__(self, pmrSpec, coordinationUrl, nbrReduces, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
@@ -66,8 +67,8 @@ class kmeans:
             # Clean temporary iterative reduce output files 
             try:                
                 for reduceOut in os.listdir(mr.output):
-                    if reduceOut.startswith("reduce-"):
-                        os.remove(os.path.join(mr.output,reduceOut))            
+                    if reduceOut.startswith(REDUCE_FILE_PREFIX) or reduceOut.startswith(CENTER_FILE_PREFIX) :
+                        os.remove(os.path.join(mr.output,reduceOut))                                    
             except:
                 pass
             
