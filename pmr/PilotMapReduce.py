@@ -395,6 +395,7 @@ class MapReduce:
             self.output_du.append(self.compute_data_service.submit_data_unit(output_desc))            
         self.compute_data_service.wait()
         
+        reduce_jobs = []
         for reduce_du in rvalues:            
             reduce_job_description = {
                     "executable":  "python ",
@@ -407,9 +408,9 @@ class MapReduce:
                     "affinity_machine_label": self.finalpilot['affinity_machine_label'],
                     "output_data": [{self.output_du[i].get_url():['reduce-' + str(i) ] + self.reduce_output_files}]
                 }   
-            self.compute_data_service.submit_compute_unit(reduce_job_description)
-            i = i + 1    
-        self.compute_data_service.wait()
+            reduce_jobs.append(self.compute_data_service.submit_compute_unit(reduce_job_description))
+            i = i + 1  
+        self.check_states(reduce_jobs)
         logger.info(" Reduce jobs Done.... ")    
 
     def export_reduce_output(self):
