@@ -40,6 +40,7 @@ class MapReduce:
         self.map_arguments=[]
         self.pilot_wd = {}
         self.reduce_arguments=[]  
+        self.reduce_output_files=[]
         self.output=""              
         self.input_dus = []
         self.chunk_dus = []
@@ -404,7 +405,7 @@ class MapReduce:
                     "error": "reduce.err",
                     "affinity_datacenter_label": self.finalpilot['affinity_datacenter_label'],
                     "affinity_machine_label": self.finalpilot['affinity_machine_label'],
-                    "output_data": [{self.output_du[i].get_url():['reduce-' + str(i) ]}]
+                    "output_data": [{self.output_du[i].get_url():['reduce-' + str(i) ] + self.reduce_output_files}]
                 }   
             self.compute_data_service.submit_compute_unit(reduce_job_description)
             i = i + 1    
@@ -416,7 +417,9 @@ class MapReduce:
         for output_du in self.output_du:
             output_du.export(self.output)
     
-            
+   
+        
+                 
     def get_reduce_output_dus(self):
         return self.output_du
             

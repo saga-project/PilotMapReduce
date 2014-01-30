@@ -13,6 +13,8 @@ logger = logging.getLogger('Iterative')
 def parseVector(line):
     return [float(x) for x in line.split(',')]
 
+CENTER_FILE_PREFIX = "Centers-"
+
 class kmeans:
     def __init__(self, pmrSpec, coordinationUrl, nbrReduces, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
         self.pmrSpec = pmrSpec
@@ -45,6 +47,7 @@ class kmeans:
         initCenterFileName = os.path.basename(self.centroid['file_urls'][0])        
         mr.map_arguments=[initCenterFileName]  
         mr.reduce_arguments=[]
+        mr.reduce_output_files = [CENTER_FILE_PREFIX+ '*']
         mr.output=os.getcwd()+'/output'
         logger.info("Initilalized Pilot-MapReduce ") 
         
@@ -76,7 +79,7 @@ class kmeans:
             mgst=time.time()                    
             newCenterFile = mr.output+'/centers.txt'
             with open(newCenterFile, 'w') as mergeFile:
-                for centerOut in glob.glob( '%s/center-*' % mr.output):
+                for centerOut in glob.glob( '%s/%s*' % (mr.output, CENTER_FILE_PREFIX)):
                     logger.info("processing file %s " % centerOut)
                     centerRead = open(os.path.join(mr.output,centerOut),'r')
                     for line in centerRead:

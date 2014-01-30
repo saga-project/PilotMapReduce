@@ -18,7 +18,7 @@ if __name__ == "__main__":
     
     # reduce function
     clusterPoints={}
-    centersFile=open("Centers-"+reduceJob.reduce, "w")
+    centersFile=open(kmeans.CENTER_FILE_PREFIX + reduceJob.reduce, "w")
     for pName in reduceJob.partitionFiles:
         with open(pName) as infile:
             for line in infile:
@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 if clusterPoints.get(clusterId,None) == None:
                     clusterPoints[clusterId] = []
                 clusterPoints[clusterId].append(kmeans.parseVector(",".join(tokens[1:])))
-                reduceJob.emit( '' , ','.join(tokens[1:]) )                
+                reduceJob.emit( None,','.join(tokens[1:]) )                
 
     for clusterId,points in clusterPoints.iteritems():
         newCenter = average(points)

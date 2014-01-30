@@ -7,7 +7,10 @@ class Reducer:
         self.reduceWrite=open(reduceFile, 'w')   
     
     def emit(self, key, value):
-        self.reduceWrite.write("%s,%s" % (key,value)) 
+        if key is None:
+            self.reduceWrite.write("%s\n" % value)
+        else:
+            self.reduceWrite.write("%s,%s\n" % (key,value)) 
         
     def finalize(self):  
         self.reduceWrite.close()    
