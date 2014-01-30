@@ -1,17 +1,16 @@
-#!/usr/bin/env python
-
+import pmr.Reducer as Reducer
 import sys
-import os
 
-# input files from STDIN (standard input)
-partitionFiles=sys.argv[1]
-partitionList=partitionFiles.split(":")
-keyCount={}
-k=str(partitionList[0].split("-")[-1:][0])
-reduceFile="reduce-"+str(k)
-        
-with open(reduceFile, 'w') as reduceWrite:
-    for fname in partitionList:
-        with open(fname) as infile:
+if __name__ == "__main__":
+    # Initialize Reduce job
+    reduceJob = Reducer(sys.argv)         
+    
+    
+    # reduce function
+    for pName in reduceJob.partitionFiles:
+        with open(pName) as infile:
             for line in infile:
-                reduceWrite.write(line)
+                reduceJob.emit(line)
+                
+    ## Finalize reduce job   
+    reduceJob.finalize()            

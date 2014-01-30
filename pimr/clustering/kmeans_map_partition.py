@@ -1,48 +1,36 @@
-import numpy as np
-import logging
+import time
 import sys
-from pimr.clustering import kmeans
+import pmr.Mapper as Mapper
+import logging
+logger = logging.getLogger('MAPPER')
+import pimr.clustering.kmeans as kmeans
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('Iterative')
-        
 def closestPoint(p, centers):
     bestIndex = 0
     closest = float("+inf")
     for i in range(len(centers)):
-        dist = np.sum((p - centers[i]) ** 2)
+        dist = sum([(j-i)**2 for i,j in zip(p,centers[i]) ])
         if dist < closest:
             closest = dist
             bestIndex = i
-    return bestIndex    
+    return bestIndex
 
 if __name__ == "__main__":
-    # default parameters passed to map function 
-    chunkFileNm = sys.argv[1]
-    nbrReduces=int(sys.argv[2])
-    sortedPartitionNbr=[]
-    partitionNbr=[[] for _ in range(nbrReduces)]
-    
+    # Initialize Map Job
+    mapJob = Mapper(sys.argv)         
     
     # map function    
-    centersFile = open(sys.argv[3])
-    pVectors = map(kmeans.parseVectorLine, open(chunkFileNm))
-    temp = kmeans.sortPoints(centersFile)
-    cVectors = map(kmeans.parseVector, temp)
+    pVectors = map(kmeans.parseVector, open(mapJob.chunkFileName))
+    cVectors = map(kmeans.parseVector, open(mapJob.mapArgs[0]))
+    cVectors = sorted(cVectors)    
     logger.info("Total number of datapoints/chunk is %s " % len(pVectors))
+    tst=time.time()
     for point in pVectors:
-        bestIndex = closestPoint(point, cVectors)        
-        l=hash(bestIndex)%int(nbrReduces)
-        partitionNbr[l].append("%s\n" % ",".join([str(x) for x in point]))
-        
-    for i in range(0,nbrReduces):
-        partitionName="part-"+str(i) 
-        sortedPartitionNbr.append(open( chunkFileNm + "-sorted-map-"+ partitionName,'w'))
-
-    for i in range(0,nbrReduces):
-        partitionNbr[i].sort()
-        for l in partitionNbr[i]:
-            sortedPartitionNbr[i].write(l) 
-
-    for i in range(0,nbrReduces): 
-        sortedPartitionNbr[i].close()
+        st=time.time()
+        bestIndex = closestPoint(point, cVectors)                
+        mapJob.emit(bestIndex, "%s\n" % ",".join([str(x) for x in point]))        
+        logger.info("Time taken - %s" % round(time.time()-st,2))
+    logger.info("Total Time taken - %s" % round(time.time()-tst,2))
+    
+    ## Finalize map job  
+    mapJob.finalize()
