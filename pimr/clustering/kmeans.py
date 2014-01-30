@@ -4,7 +4,6 @@ import logging
 import copy
 import glob
 from pmr import PilotMapReduce
-import numpy as np
 from pilot import PilotComputeService, PilotDataService, ComputeDataService, State
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Iterative')
@@ -93,7 +92,7 @@ class kmeans:
             nfh.close()  
             newVectors = sorted(newVectors)            
             
-            self.tempDist = sum(np.sum((x - y) ** 2) for x,y in zip(oldVectors, newVectors)) 
+            self.tempDist = sum([(m-k)**2 for k,m in zip(oldVectors, newVectors) ])
             mr.isIter = True  
             oldVectors = newVectors
             itet = time.time()

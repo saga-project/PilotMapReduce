@@ -8,9 +8,9 @@ class Reducer:
     
     def emit(self, key, value):
         if key is None:
-            self.reduceWrite.write("%s\n" % value)
+            self.reduceWrite.write("%s" % value)
         else:
-            self.reduceWrite.write("%s,%s\n" % (key,value)) 
+            self.reduceWrite.write("%s,%s" % (key,value)) 
         
     def finalize(self):  
         self.reduceWrite.close()    
