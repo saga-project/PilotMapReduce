@@ -2,6 +2,7 @@ import numpy as np
 import logging
 import sys
 from pimr.clustering import kmeans
+np.__config__.show()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Iterative')
@@ -16,6 +17,33 @@ def closestPoint(p, centers):
             bestIndex = i
     return bestIndex    
 
+def parseVector(point):
+    return np.array(point)
+    
+def parseVectorLine(line):
+    return np.array([float(x) for x in line.split(',')])  
+
+def sortPoints(centersFile):
+    temp = centersFile.readlines()
+    temp = [ i.strip().split(",") for i in temp ]
+    tempx = []
+    for i in temp:
+        tempx.append([ float(j) for j in i ])
+    temp = [tuple(i) for i in tempx ]
+    return sorted(temp)
+    
+
+def average(points):
+    numVectors = len(points)
+    if numVectors > 0:
+        out = np.array(points[0])
+        for i in range(1, numVectors):
+            out += points[i]
+        out = out / numVectors
+        return out
+    else:
+        return np.array([0,0])
+
 if __name__ == "__main__":
     # default parameters passed to map function 
     chunkFileNm = sys.argv[1]
@@ -26,9 +54,9 @@ if __name__ == "__main__":
     
     # map function    
     centersFile = open(sys.argv[3])
-    pVectors = map(kmeans.parseVectorLine, open(chunkFileNm))
-    temp = kmeans.sortPoints(centersFile)
-    cVectors = map(kmeans.parseVector, temp)
+    pVectors = map(parseVectorLine, open(chunkFileNm))
+    temp =sortPoints(centersFile)
+    cVectors = map(parseVector, temp)
     logger.info("Total number of datapoints/chunk is %s " % len(pVectors))
     for point in pVectors:
         bestIndex = closestPoint(point, cVectors)        
