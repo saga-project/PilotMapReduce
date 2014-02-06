@@ -55,6 +55,8 @@ class MapReduce:
         self.iterativeInput = None
         self.iterdu = None
         self.isIter = False
+        self.map_executable = "python"
+        self.reduce_executable = "python"
         
     def check_states(self, jobs):
         try:
@@ -284,7 +286,7 @@ class MapReduce:
                     l=cdu.list().keys()
                     l.sort()
                     map_job_description = {
-                        "executable": "python " ,
+                        "executable": self.map_executable ,
                         "arguments": [str((self.cmr['mapper'].list()).iterkeys().next())] + l + [str(self.nbr_reduces)] + self.map_arguments,
                         "number_of_processes": self.map_number_of_processes,
                         "output": "map.out",                                              
@@ -330,7 +332,7 @@ class MapReduce:
                     st = time.time()
                     logger.info("Creating a map compute unit..")                    
                     map_job_description = {
-                        "executable": "python " ,
+                        "executable": self.map_executable ,
                         "arguments": [self.ms_name, chunk_fn ,str(self.nbr_reduces)] + self.map_arguments,
                         "number_of_processes": self.map_number_of_processes,
                         "output": "map.out",                                              
@@ -398,7 +400,7 @@ class MapReduce:
         reduce_jobs = []
         for reduce_du in rvalues:            
             reduce_job_description = {
-                    "executable":  "python ",
+                    "executable":  self.reduce_executable,
                     "arguments": [ str(self.rs_name)] + [ ":".join(k.list().keys()) for k in reduce_du ] + self.reduce_arguments,
                     "number_of_processes": self.reduce_number_of_processes,
                     "input_data" : [self.rs_url] + [k.get_url() for k in reduce_du ],

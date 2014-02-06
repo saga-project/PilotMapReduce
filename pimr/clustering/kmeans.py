@@ -17,7 +17,7 @@ CENTER_FILE_PREFIX = "Centers-"
 REDUCE_FILE_PREFIX = "reduce-"
 
 class kmeans:
-    def __init__(self, pmrSpec, coordinationUrl, nbrReduces, delta, mapProcs, reduceProcs, nbrPoints, initCenter, nbrIterations = 10):
+    def __init__(self, pmrSpec, coordinationUrl, nbrReduces, chunkSize, delta, mapProcs, reduceProcs, nbrPoints, initCenter, dimension, nbrIterations = 10):
         self.pmrSpec = pmrSpec
         self.nbrReduces = nbrReduces
         self.delta = delta
@@ -28,6 +28,8 @@ class kmeans:
         self.tempDist = float('Inf')
         self.nbrPoints = nbrPoints
         self.nbrIterations=nbrIterations
+        self.chunkSize = chunkSize
+        self.dimension = dimension
         self.iterTimes = {}
         logger.info(" Initilalized Pilot-Iterative MapReduce ")
     
@@ -41,13 +43,15 @@ class kmeans:
         mr.map_number_of_processes=self.mapProcs
         mr.reduce_number_of_processes=self.reduceProcs
         mr.chunk="ssh://localhost/" + os.getcwd()+'/../kmeans_chunk.sh'
-        mr.mapper="ssh://localhost/" + os.getcwd()+'/../kmeans_map_partition.py'        
-        mr.reducer="ssh://localhost/" + os.getcwd()+'/../kmeans_reduce.py'
+        mr.mapper="ssh://localhost/" + os.getcwd()+'/../KMeansMR.jar'        
+        mr.reducer="ssh://localhost/" + os.getcwd()+'/../KMeansMR.jar'
         mr.chunk_type=1
-        mr.chunk_arguments=[self.nbrPoints]
-        initCenterFileName = os.path.basename(self.centroid['file_urls'][0])        
-        mr.map_arguments=[initCenterFileName]  
-        mr.reduce_arguments=[]
+        mr.chunk_arguments=[self.chunkSize]
+        initCenterFileName = os.path.basename(self.centroid['file_urls'][0])
+        mr.map_executable = "java KMeansMR.jar Mapper"        
+        mr.map_arguments=[initCenterFileName, self.nbrPoints, self.dimension]  
+        mr.reduce_executable = "java KMeansMR.jar Reducer"     
+        mr.reduce_arguments=[self.dimension]
         mr.reduce_output_files = [CENTER_FILE_PREFIX+ '*']
         mr.output=os.getcwd()+'/output'
         logger.info("Initilalized Pilot-MapReduce ") 
