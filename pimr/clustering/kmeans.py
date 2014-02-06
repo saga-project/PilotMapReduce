@@ -11,7 +11,7 @@ logger = logging.getLogger('Iterative')
 
 
 def parseVector(line):
-    return [float(x) for x in line.split(',')]
+    return [float(x) for x in line.split(' ')]
 
 CENTER_FILE_PREFIX = "Centers-"
 REDUCE_FILE_PREFIX = "reduce-"
