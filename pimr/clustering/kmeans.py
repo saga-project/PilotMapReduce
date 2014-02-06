@@ -47,9 +47,9 @@ class kmeans:
         mr.reducer="ssh://localhost/" + os.getcwd()+'/../KMeansMR.jar'
         mr.chunk_type=1
         mr.chunk_arguments=[self.chunkSize]
-        initCenterFileName = os.path.basename(self.centroid['file_urls'][0])
+        initCenterFileName = self.centroid['file_urls'][0]
         mr.map_executable = "java KMeansMR.jar Mapper"        
-        mr.map_arguments=[initCenterFileName, self.nbrPoints, self.dimension]  
+        mr.map_arguments=[os.path.basename(initCenterFileName), self.nbrPoints, self.dimension]  
         mr.reduce_executable = "java KMeansMR.jar Reducer"     
         mr.reduce_arguments=[self.dimension]
         mr.reduce_output_files = [CENTER_FILE_PREFIX+ '*']
