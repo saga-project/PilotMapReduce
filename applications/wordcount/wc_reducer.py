@@ -1,0 +1,29 @@
+from pmr.reducer import reducer
+import sys
+
+
+if __name__ == "__main__":
+    # Initialize Reduce job
+    reduceJob = reducer(sys.argv)         
+    
+    # reduce function
+    count={}
+    for pName in reduceJob.partitionFiles:
+        with open(pName) as infile:
+            for line in infile:
+                tokens=line.split(",")
+                
+                # Actual word might contain "," 
+                value = int(tokens[-1])
+                word = ",".join(tokens[:-1])
+                
+                if count.has_key(word):
+                    count[word]=count[word]+ value
+                else:
+                    count[word] = value
+
+    for word,count in count.iteritems():                
+        reduceJob.emit( word, count )                
+
+    ## Finalize reduce job   
+    reduceJob.finalize() 
