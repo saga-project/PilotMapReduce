@@ -4,20 +4,36 @@
 PMR setup script.
 """
 
-import os
-import sys
-import shutil
-import fileinput
-
-from distutils.core import setup
 from distutils.command.install_data import install_data
 from distutils.command.sdist import sdist
+from distutils.core import setup
+import os
+import sys
 
-from pmr import version
+version = "latest"
+
+try:
+    fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION')
+    version = open(fn).read().strip()
+except IOError:
+    from subprocess import Popen, PIPE, STDOUT
+    import re
+
+    VERSION_MATCH = re.compile(r'\d+\.\d+\.\d+(\w|-)*')
+
+    try:
+        p = Popen(['git', 'describe', '--tags', '--always'], stdout=PIPE, stderr=STDOUT)
+        out = p.communicate()[0]
+
+        if (not p.returncode) and out:
+            v = VERSION_MATCH.search(out)
+            if v:
+                version = v.group()
+    except OSError:
+        pass    
 
 scripts = [] # ["bin/pmr-run"]
 
-import sys
 if sys.hexversion < 0x02070000:
     raise RuntimeError, "PMR requires Python 2.7 or higher"
 
@@ -50,7 +66,7 @@ setup_args = {
     'description': "SAGA Pilot-Abstractions based MapReduce Implementation",
     'long_description': "SAGA Pilot-Abstractions based MapReduce Implementation",
     'author': "Pradeep Mantha",
-    'author_email': "pmanth2@cct.lsu.edu",
+    'author_email': "pradeepm66@gmail.com",
     'maintainer': "Pradeep Mantha",
     'maintainer_email': "pmanth2@cct.lsu.edu",
     'url': "https://github.com/saga-project/PilotMapReduce/wiki",
@@ -81,7 +97,7 @@ setup_args = {
         'Operating System :: Unix'
         ],
 
-    'packages': [ "pmr","pimr","pimr.clustering"],
+    'packages': [ "pmr", "pmr.util"],
     'include_package_data':True,
     'scripts': scripts,
     # mention data_files, even if empty, so install_data is called and

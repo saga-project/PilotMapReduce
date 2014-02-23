@@ -1,0 +1,179 @@
+
+Metroid (video game)
+From Wikipedia, the free encyclopedia
+Metroid
+A video game cover. A person in a powered exoskeleton fires a projectile at a monster.
+North American box art
+Developer(s)	Nintendo R&D1[1]
+Intelligent Systems[2]
+Publisher(s)	Nintendo
+Director(s)	Satoru Okada
+Producer(s)	Gunpei Yokoi
+Artist(s)	Hiroji Kiyotake
+Hirofumi Matsuoka
+Yoshio Sakamoto[3]
+Writer(s)	Makoto Kano
+Composer(s)	Hirokazu Tanaka
+Series	Metroid
+Platform(s)	Family Computer Disk System, Nintendo Entertainment System, Game Boy Advance, Virtual Console (Wii, Nintendo 3DS, Wii U)
+Release date(s)	
+August 6, 1986[show]
+Genre(s)	Action-adventure
+Mode(s)	Single-player
+Metroid (Japanese: メトロイド Hepburn: Metoroido?) is an action-adventure video game, and the first entry in the Metroid series. It was co-developed by Nintendo's Research and Development 1 division and Intelligent Systems, and was released for the Famicom Disk System in Japan on August 6, 1986, and for the Nintendo Entertainment System in North America in August 1987, and in Europe in January 1988. The game was re-released for the Game Boy Advance in October 2004, and for the Wii Virtual Console in Europe in July 2007, in North America in August 2007, and in Japan in March 2008. Metroid was produced by Gunpei Yokoi, directed by Satoru Okada and Yoshio Sakamoto, and had music composed by Hirokazu Tanaka.
+Set on the planet Zebes, the story follows Samus Aran as she attempts to retrieve the parasitic Metroid organisms that were stolen by Space Pirates, who plan to replicate the Metroids by exposing them to beta rays and then use them as biological weapons to destroy Samus and all who oppose them. The game's style, focusing on exploration and the search for power-ups that are used to reach previously inaccessible areas, influenced other video games. Its varied endings for fast completion times made it a popular game for speedrunning. Metroid was lauded for being one of the first video games to feature a female protagonist, though the player must complete the game in under five hours for this to be revealed, with the game's instruction manual even using "he" to refer to the protagonist. Nintendo Power ranked Metroid 11th on their list of the best video games made on a Nintendo video game console. On Top 100 Games lists, Metroid was ranked 7th by Game Informer and 69th by Electronic Gaming Monthly.
+Contents  [hide] 
+1 Gameplay
+2 Plot
+3 Development
+4 Music
+5 Reception
+6 Enhanced Remake
+7 References
+8 External links
+Gameplay[edit]
+
+A video game screenshot. A person in a powered exoskeleton travels through a cave, while winged monsters hang from the ceiling.
+
+In this screenshot of Metroid, Samus is seen jumping up. The health meter is in the upper left corner, marked by "EN".
+Metroid is an action-adventure game in which the player controls Samus Aran in sprite-rendered two-dimensional landscapes. The game takes place on the planet Zebes, a large, open-ended world with areas connected by doors and elevators. The player controls Samus Aran as she travels through the planet's caverns and hunts Space Pirates. She begins with a weak power beam as her only weapon, and with only the ability to jump. The player explores more areas and collects power-ups that grant Samus special abilities and enhance her armor and weaponry, granting access to areas that were previously inaccessible. Among the power-ups that are included in the game are the Morph Ball, which allows Samus to curl into a ball to roll into tunnels and use the Bomb weapon, and the Screw Attack, a somersaulting move that destroys enemies in its path. In addition to common enemies, Samus encounters bosses whom she needs to defeat to progress. Defeating an ordinary enemy typically yields additional energy or ammunition, while defeating a boss expands Samus's capacity to carry ammunition and opens the door to the final area.[6][7]
+Plot[edit]
+
+Metroid series
+fictional chronology
+Metroid (Zero Mission)
+Metroid Prime
+Hunters
+Echoes
+Corruption
+Return of Samus
+Super Metroid
+Other M
+Fusion
+Chronologically, Metroid takes place first in the fictional Metroid universe. Space Pirates attack a Galactic Federation-owned space research vessel and seize samples of Metroid creatures. Dangerous floating organisms, Metroids can latch on to any organism and drain its life energy to kill it. The Space Pirates plan to replicate Metroids by exposing them to beta rays and then using them as biological weapons to destroy all living beings that oppose them. While searching for the stolen Metroids, the Galactic Federation locates the Space Pirates' base of operations on the planet Zebes. The Federation assaults the planet, but the Pirates resist, forcing the Federation to retreat. As a last resort, the Federation decides to send a lone bounty hunter to penetrate the Pirates' base and destroy Mother Brain, the mechanical life-form that controls the Space Pirates' fortress and its defenses. Considered the greatest of all bounty hunters, Samus Aran is chosen for the mission. Samus lands on the surface of Zebes and explores the planet, traveling through the planet's caverns. She eventually comes across Kraid, an ally of the Space Pirates, and Ridley, the Space Pirates' commander, and defeats them both. Eventually, Samus finds and destroys Mother Brain. She then places a time bomb set for 999 seconds, and escapes the collapsing lair.[8]
+Development[edit]
+
+Portrait of Yoshio Sakamoto, making a public speech.
+
+Yoshio Sakamoto, a co-director and character designer for Metroid, speaking at the 2010 Game Developers Conference
+After Nintendo's release of commercially successful platforming games in the 1980s, including Donkey Kong (1981), Ice Climber (1985), and Super Mario Bros. (1985), as well as the critically acclaimed adventure game The Legend of Zelda (1986), the company began work on an action game.[9] The game was dubbed Metroid, which is a portmanteau of the words "metro" and "android".[10][11] It was co-developed by Nintendo's Research and Development 1 division and Intelligent Systems, and produced by Gunpei Yokoi.[1][2][11] Metroid was directed by Satoru Okada and Yoshio Sakamoto (credited as 'Yamamoto'), and featured music written by Hirokazu Tanaka.[11][12][13] Makoto Kano was tasked to create the scenario, and Hiroji Kiyotake, Hirofumi Matsuoka and Yoshio Sakamoto designed the game's characters.[11] The character design for Samus Aran was created by Kiyotake.[14] Officially defined as a scrolling shooter video game, Nintendo released Metroid for the Family Computer Disk System on August 6, 1986, and on the Nintendo Entertainment System in August 1987.[4][9]
+The production was described as a "very free working environment" by Tanaka, who stated that, despite being the composer, he also gave input for the game's graphics and helped name the game's areas. Part way through development, one of the developers asked the others, "Hey, wouldn't that be kind of cool if it turned out that this person inside the suit was a woman?", an idea which was incorporated into the game (though the instruction manual for the game uses the pronoun "he" to refer to Samus many times).[15] Ridley Scott's 1979 horror film Alien was described by Sakamoto as a "huge influence" on Metroid after the game's world had been created. The development staff was affected by the work of the film's creature designer H. R. Giger, and found his creations to be fitting for the Metroid universe.[16]
+Nintendo attempted to set Metroid apart from other games by making it a nonlinear adventure-based game, in which exploration was a crucial part of the experience. The game often requires that players retrace their steps to progress, forcing the player to scroll the screen left in addition to moving it right, as was the case in most contemporary games. Metroid was also considered one of the first to impress a feeling of desperation and solitude on the player. Following The Legend of Zelda, Metroid helped pioneer the idea of acquiring tools to strengthen characters and help progress through the game. Up until that point, most ability-enhancing power-ups like the Power Shot in Gauntlet (1985) and the Starman in Super Mario Bros. offered only temporary boosts to characters, and they were not required to complete the game. In Metroid, however, items were permanent fixtures that lasted until the end. In particular, missiles were mandatory to finish the game.[9]
+After defeating Mother Brain, the player is given an end screen based on the time it took them to get there. Metroid is one of the first games to contain multiple endings, with five in total. In the third, fourth, and fifth endings, Samus Aran appears without her suit, and for the first time, reveals herself to be a woman. In Japan, the Disk Card media used by the Disk System allowed players to save up to three different games in Metroid, similar to the three save slots in The Legend of Zelda in the West. Use of an internal battery to manage files was not fully realized in time for Metroid's international release. The Western versions of Metroid use a password system that was new to the industry at the time, in which players write down a 24-letter code and re-enter it into the game when they wish to continue a previous session. Codes also allow for changes in gameplay; the "NARPAS SWORD" grants Samus infinite ammunition, health, all power-ups, and a modified Ice Beam.[9] The "JUSTIN BAILEY" code lets the player play as Samus without her Power Suit, which was thought by some to be the only way to use the feature, however it is available simply by beating the game quickly enough to reveal Samus wearing a leotard at the ending sequence. However, the game on the Nintendo 3DS becomes inoperable if the player enters a code that the game does not recognize.[17]
+Music[edit]
+
+Tanaka said he wanted to make a score that made players feel like they were encountering a "living organism" and had no distinction between music and sound effects. The only time the main Metroid theme is heard is when Mother Brain is defeated, to give the victorious player a catharsis. During the rest of the game, no melodies are present because Tanaka wanted the soundtrack to be the opposite of the upbeat tunes found in other games at that time.[18]
+In his book "Maestro Mario: How Nintendo Transformed Videogame Music into an Art," videogame scholar Andrew Schartmann notes the possible influence of Jerry Goldsmith's Alien score on Tanaka's music—a hypothesis supported by Sakamoto's acknowledgement of Alien's influence on the game's development. As Schartmann notes, "Much like Metroid, the movie owes some of its tensest moments to silence."[19] Schartmann further argues that Tanaka's emphasis on silence was revolutionary to videogame composition:
+Tanaka’s greatest contribution to game music comes, paradoxically, in the form of silence. He was arguably the first videogame composer to emphasize the absence of sound in his music. Tanaka’s score is an embodiment of isolation and atmospheric effect—one that penetrates deeply into the emotions.
+
+— Andrew Schartmann, Maestro Mario: How Nintendo Transformed Videogame Music into an Art, Thought Catalog (2013)
+
+This view is echoed by Gamespot's "History of Metroid," which notes how the "[game's music] superbly evoked the proper feelings of solitude and loneliness one would expect while infiltrating a hostile alien planet alone."[20]
+Reception[edit]
+
+[hide]Reception
+Review scores
+Publication	Score
+Allgame	5/5 stars[21]
+Gamespot	5.5/10[22]
+The Video Game Critic	B [23]
+Metroid has shipped 2.73 million units worldwide.[24] In Nintendo Power's list of the Top 200 Games, Metroid was ranked the 11th-best game made on a Nintendo video game console.[25] Two years later, the magazine also named Metroid the fifth-best game for the Nintendo Entertainment System in its Best of the Best feature, describing it as a combination of Super Mario Bros.'s platforming and The Legend of Zelda's exploration and character upgrades.[26] On Top 100 Games lists, the game was ranked 69th by Electronic Gaming Monthly,[27] and 6th by Game Informer[28] then 7th in 2009 by Game Informer.[29] Game Informer also put Metroid 7th on their list of "The Top 200 Games of All Time", saying that it "started the concept of open exploration in games".[30] GamesRadar ranked it the fifth best NES game ever made. The staff felt that it had aged after the release of Super Metroid but was "fantastic for its time".[31] Metroid's multiple endings enticed players to race through the game as fast as possible, a method of play commonly known as speedrunning.[9] The game was re-released or made available several times after its original launch. Linking the Game Boy Advance game Metroid Fusion (2002) with the Nintendo GameCube's Metroid Prime (2002) using a special cable unlocks the full version of Metroid.[32] An emulated version of Metroid was available as a bonus upon completion of Metroid: Zero Mission (2004).[33] A Game Boy Advance port of Metroid, part of the Classic NES Series collection, was released in Japan on August 10, 2004, in North America on October 25, 2004, and in Europe on January 7, 2005.[34] The game arrived on the Wii Virtual Console in Europe on July 20, 2007, in North America on August 13, 2007, and in Japan on March 4, 2008.[35] Metroid was released for the Nintendo 3DS Virtual Console in March 1, 2012.[36] This release was featured amongst other games from the NES and Super NES to be released for the 3DS on a tech demo called Classic Games at E3 2010. Nintendo of America president Reggie Fils-Aime said "not to think of them as remakes". Miyamoto said that these classics might be using "new features in the games that would take advantage of the 3DS' capabilities".[37]
+In a retrospective focusing on the entire Metroid series, GameTrailers remarked on the original game's legacy and its effect on the video game industry. They noted that starting with Metroid, search and discovery is what continues to make the franchise popular. The website felt that the combination of detailed sprites, original map designs, and an intimidating musical score "generated an unparalleled ambience and atmosphere that trapped the viewer in an almost claustrophobic state". They also noted that the Morph Ball, first introduced in Metroid, "slammed an undeniable stamp of coolness on the whole experience and the franchise", and they enjoyed the end segment after defeating Mother Brain, claiming that the race to escape the planet Zebes was a "twist few saw coming". The game brought "explosive action" to the Nintendo Entertainment System and a newfound respect for female protagonists.[9] Noting that Metroid was not the first game to offer an open world, nor was it the first side-view platformer exploration game, and neither was it the first game to allow players to reach new areas using newly acquired items, Gamasutra praised Metroid for being perhaps the first video game to "take these different elements and rigorously mold them into a game-ruling structure".[38]
+Reviewing the Classic NES Series version of the game, GameSpot noted that 18 years after its initial release, Metroid "just doesn't measure up to today's action adventure standards", giving the game a rating of 5.2 out of 10, for "mediocre".[39] For the Wii Virtual Console version, IGN commented that the game's presentation, graphics, and sound were basic. However, they were still pleased with Metroid's "impressive" gameplay, rating the game 8.0 out of 10, for "great," and giving it an Editor's Choice award. The review stated that the game was "still impressive in scope" and that the price was "a deal for this adventure" while criticising the number of times it has been re-released and noting that it takes "patience" to get past the high initial difficulty curve.[40] In GameSpot's review of the Virtual Console version, they criticized its "frustrating room layouts" and "constantly flickering graphics". In particular, the website was disappointed that Nintendo did not make any changes to the game, specifically criticizing the lack of a save feature.[41]
+Metroid's gameplay style, focusing on exploration and searching for power-ups to reach previously inaccessible areas, influenced other series, most notably the post-Symphony of the Night titles of the Castlevania series.[42] The revelation of Samus being a woman was also lauded as innovative, with GameTrailers remarking that this "blew the norm of women in pieces, at a time when female video game characters were forced into the role of dutiful queen or kidnapped princess, missile-blasting the way for other characters like Chun-Li [from the Street Fighter series] and Lara Croft [from the Tomb Raider series]".[9]
+Enhanced Remake[edit]
+
+The game was also reimagined as Metroid: Zero Mission with a more developed backstory, enhanced graphics, and same general game layout.
+References[edit]
+
+^ Jump up to: a b "「メトロイド」に託す思い 坂本賀勇インタビュー". ニンテンドウオンラインマガジン（No.56）. Nintendo Co., Ltd. March 2003. Retrieved 22 August 2010.
+^ Jump up to: a b Christian Nutt (23 April 2010). "The Elegance Of Metroid: Yoshio Sakamoto Speaks". Gamasutra. United Business Media LLC. Retrieved 5 August 2010.
+Jump up ^ "Yoshio Sakamoto bio". GDC 2010 Online Press Kit. Nintendo of America, Inc. (via WebCite). March 2010. Retrieved 6 August 2010.
+^ Jump up to: a b "Iwata Asks: Metroid: Other M – Vol. 1: The Collaboration / Just One Wii Remote". Nintendo of America Inc. 2010-07-29. Retrieved 2011-07-03.
+Jump up ^ "Metroid Related Games". GameSpot. Retrieved 2013-04-18.
+Jump up ^ Metroid instruction manual. Nintendo. 1987-08-15.
+Jump up ^ "Metroid". GameSpot. Retrieved 2009-02-23.
+Jump up ^ Nintendo R&D1 (1987-08-15). Metroid. Nintendo.
+^ Jump up to: a b c d e f g "The Metroid Retrospective – Part 1". GameTrailers. 2007-07-25. Retrieved 2009-02-20.
+Jump up ^ "Episode 10". GameCenter CX. 2003. Fuji TV.
+^ Jump up to: a b c d Nintendo Co., Ltd (1987-08-15). Metroid. Nintendo of America Inc. Scene: staff credits.
+Jump up ^ "Metroid (1986) NES credits". MobyGames. Retrieved May 6, 2012.
+Jump up ^ "Nintendo Online Magazine No. 76 – Nintendo DS 開発者インタビュー" (in Japanese). Nintendo Co., Ltd. November 2004. Retrieved 2011-06-21.
+Jump up ^ "やればやるほどディスクシステムインタビュー(前編)". Nintendo Dream (in Japanese) (Mainichi Communications Inc.) (118): 96–103. August 6, 2004.
+Jump up ^ "Metroid: Zero Mission director roundtable". IGN. 2004-01-30. Retrieved 2008-02-20.
+Jump up ^ "The Making of Super Metroid". Retro Gamer (Imagine Publishing Ltd.) (65): 60. July 2009.
+Jump up ^ McWhertor, Michael (2011-08-31). "Under No Circumstances Should You Use This Dirty Password on Metroid for Nintendo 3DS". Kotaku. Retrieved 2011-09-01.
+Jump up ^ Brandon, Alex (2002-09-25). "Shooting from the Hip: An Interview with Hip Tanaka". Gamasutra. Retrieved 2008-02-19.
+Jump up ^ Schartmann, Andrew. Maestro Mario: How Nintendo Transformed Videogame Music into an Art. New York: Thought Catalog, 2013.
+Jump up ^ http://www.gamespot.com/gamespot/features/video/hist_metroid/p2_01.html
+Jump up ^ Norris IV, Benjamin F. "Metroid - Review". Allgame. Retrieved December 6, 2012.
+Jump up ^ Provo, Frank. "Metroid Review". Gamespot. Retrieved December 6, 2012.
+Jump up ^ "The Video Game Critic's NES Reviews". videogamecritic.net. Retrieved 6 December 2012.
+Jump up ^ 2004 CESA Games White Paper (Computer Entertainment Supplier's Association): 58–63. 2003-12-31.
+Jump up ^ "NP Top 200". Nintendo Power (200): 58–66. February 2006.
+Jump up ^ "NP Best of the Best". Nintendo Power (231): 70–78. August 2008.
+Jump up ^ "Top 100 Games of All Time". Electronic Gaming Monthly. Archived from the original on 2003-06-11. Retrieved 2009-02-22.
+Jump up ^ "Top 100 Games of All-Time". Game Informer (100): 34. August 2001.
+Jump up ^ Cork, Jeff (2009-11-16). "Game Informer's Top 100 Games Of All Time (Circa Issue 100)". Game Informer. Retrieved 2010-07-09.
+Jump up ^ The Game Informer staff (December 2009). "The Top 200 Games of All Time". Game Informer (200): 44–79. ISSN 1067-6392. OCLC 27315596.
+Jump up ^ "Best NES Games of all time". GamesRadar. 2012-04-16. Retrieved 2013-12-05.
+Jump up ^ Mirabella III, Fran (2002-12-15). "Metroid Prime Guide: Secrets". IGN. Retrieved 2009-02-22.
+Jump up ^ Metts, Jonathan (2004-02-12). "Metroid: Zero Mission". Nintendo World Report. Retrieved 2009-02-22.
+Jump up ^ "Classic NES Series: Metroid Release Summary". GameSpot. Retrieved 2009-08-27.
+Jump up ^ "Metroid for Wii: Game Editions". IGN. August 10, 2007. Retrieved December 26, 2008.
+Jump up ^ "Nintendo eShop: Metroid". Nintendo. Retrieved 2012-07-05.
+Jump up ^ Totilo, Stephen (2010-06-18). "Mega Man 2, Yoshi's Island Among Teased 3DS Sorta-Remakes". Kotaku. Retrieved 2010-07-18.
+Jump up ^ "Game Design Essentials: 20 Open World Games". Gamasutra. Retrieved 2009-02-23.
+Jump up ^ Colayco, Bob (2004-11-03). "Classic NES Series: Metroid Review". GameSpot. Retrieved 2009-02-23.
+Jump up ^ Thomas, Lucas M. (2007-08-13). "Metroid Review". IGN. Retrieved 2009-02-23.
+Jump up ^ Provo, Frank (2007-08-27). "Metroid Review". GameSpot. Retrieved 2009-02-23.
+Jump up ^ Oxford, Nadia (2006-08-07). "One Girl Against the Galaxy: 20 Years of Metroid and Samus Aran". 1UP.com. Retrieved 2009-02-22.
+External links[edit]
+
+Portal icon	Nintendo portal
+Portal icon	Video games portal
+Metroid (NES) at GameFAQs
+Metroid (FDS) at GameFAQs
+Metroid at the Metroid Database
+Metroid guide at StrategyWiki
+[show] v t e
+Metroid series
+This is a good article. Click here for more information.
+Categories: 1986 video gamesFamicom Disk System gamesGame Boy Advance gamesMetroid gamesNintendo Entertainment System gamesNintendo Research & Development 1 gamesPlayChoice-10 gamesSingle-player-only video gamesVirtual Console gamesVirtual Console games for Wii U
+Navigation menu
+Create accountLog inArticleTalkReadEditView history
+
+Main page
+Contents
+Featured content
+Current events
+Random article
+Donate to Wikipedia
+Wikimedia Shop
+Interaction
+Help
+About Wikipedia
+Community portal
+Recent changes
+Contact page
+Tools
+Print/export
+Languages
+Català
+Español
+Français
+한국어
+Italiano
+日本語
+Norsk bokmål
+Polski
+Português
+Русский
+Simple English
+Suomi
+Svenska
+Edit links
+This page was last modified on 16 February 2014 at 12:18.
+Text is available under the Creative Commons Attribution-ShareAlike License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. 
+Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+Privacy policyAbout WikipediaDisclaimersContact WikipediaDevelopersMobile viewWikimedia Foundation Powered by MediaWiki
