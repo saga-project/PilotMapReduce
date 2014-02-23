@@ -1,10 +1,12 @@
 import os
 import time
 
-from pilot import DataUnit
 from progressbar import Bar, ETA, Percentage, ProgressBar
 import saga
 import saga.filesystem
+
+from pilot import DataUnit
+
 
 
 class constant(object):
@@ -66,7 +68,7 @@ def _wait(units , states):
                 count[s]=0
             count['Other']=0
             
-            uStates = map(lambda i: i.get_state(), units)            
+            uStates = map(lambda i: i.get_state(), units) 
             for s in states:                
                 count[s] = uStates.count(s)
                 pbar[s].update(count[s])

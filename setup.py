@@ -1,124 +1,134 @@
-# -*- coding: utf-8 -*-
 
-"""
-PMR setup script.
-"""
+__author__    = "Pradeep Mantha"
+__copyright__ = "Copyright 2011, RADICAL Research, Rutgers University"
+__license__   = "MIT"
 
-from distutils.command.install_data import install_data
-from distutils.command.sdist import sdist
-from distutils.core import setup
+
+""" Setup script. Used by easy_install and pip. """
+
 import os
 import sys
+import subprocess
 
-version = "latest"
+from setuptools import setup, find_packages, Command
 
-try:
-    fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION')
-    version = open(fn).read().strip()
-except IOError:
-    from subprocess import Popen, PIPE, STDOUT
-    import re
 
-    VERSION_MATCH = re.compile(r'\d+\.\d+\.\d+(\w|-)*')
+#-----------------------------------------------------------------------------
+#
+# versioning mechanism:
+#
+#   - short_version:  1.2.3 - is used for installation
+#   - long_version:  v1.2.3-9-g0684b06  - is used as runtime (ru.version)
+#   - both are derived from the last git tag
+#   - the file pmr/VERSION is created with the long_version, und used
+#     by ru.__init__.py to provide the runtime version information. 
+#
+def get_version():
+
+    short_version = None  # 0.4.0
+    long_version  = None  # 0.4.0-9-g0684b06
 
     try:
-        p = Popen(['git', 'describe', '--tags', '--always'], stdout=PIPE, stderr=STDOUT)
+        import subprocess as sp
+        import re
+
+        srcroot       = os.path.dirname (os.path.abspath (__file__))
+        VERSION_MATCH = re.compile (r'(([\d\.]+)\D.*)')
+
+        # attempt to get version information from git
+        p   = sp.Popen ('cd %s && git describe --tags --always' % srcroot,
+                        stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         out = p.communicate()[0]
 
-        if (not p.returncode) and out:
-            v = VERSION_MATCH.search(out)
-            if v:
-                version = v.group()
-    except OSError:
-        pass    
 
-scripts = [] # ["bin/pmr-run"]
+        if  p.returncode != 0 or not out :
 
-if sys.hexversion < 0x02070000:
-    raise RuntimeError, "PMR requires Python 2.7 or higher"
+            # the git check failed -- its likely that we are called from
+            # a tarball, so use ./VERSION instead
+            out=open ("%s/VERSION" % srcroot, 'r').read().strip()
 
-class our_install_data(install_data):
 
-    def finalize_options(self):
-        self.set_undefined_options('install',
-            ('install_lib', 'install_dir'),
-        )
-        install_data.finalize_options(self)
+        # from the full string, extract short and long versions
+        v = VERSION_MATCH.search (out)
+        if v:
+            long_version  = v.groups ()[0]
+            short_version = v.groups ()[1]
 
-    def run(self):
-        install_data.run(self)
-        # ensure there's a pmr/VERSION file
-        fn = os.path.join(self.install_dir, 'pmr', 'VERSION')
-        open(fn, 'w').write(version)
-        self.outfiles.append(fn)
 
-class our_sdist(sdist):
+        # sanity check if we got *something*
+        if  not short_version or not long_version :
+            sys.stderr.write ("Cannot determine version from git or ./VERSION\n")
+            import sys
+            sys.exit (-1)
 
-    def make_release_tree(self, base_dir, files):
-        sdist.make_release_tree(self, base_dir, files)
-        # ensure there's a air/VERSION file
-        fn = os.path.join(base_dir, 'pmr', 'VERSION')
-        open(fn, 'w').write(version)
 
+        # make sure the version files exist for the runtime version inspection
+        open (              '%s/VERSION' % srcroot, 'w').write (long_version+"\n")
+        open ('%s/src/pmr/VERSION' % srcroot, 'w').write (long_version+"\n")
+
+
+    except Exception as e :
+        print 'Could not extract/set version: %s' % e
+        import sys
+        sys.exit (-1)
+
+    return short_version, long_version
+
+
+short_version, long_version = get_version ()
+
+#-----------------------------------------------------------------------------
+# check python version. we need > 2.5, <3.x
+if  sys.hexversion < 0x02070000 or sys.hexversion >= 0x03000000:
+    raise RuntimeError("Pilot-MapReduce requires Python 2.x (2.7 or higher)")
+
+#-----------------------------------------------------------------------------
+#
+def read(*rnames):
+    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+
+#-----------------------------------------------------------------------------
 setup_args = {
-    'name': "PilotMapReduce",
-    'version': version,
-    'description': "SAGA Pilot-Abstractions based MapReduce Implementation",
-    'long_description': "SAGA Pilot-Abstractions based MapReduce Implementation",
-    'author': "Pradeep Mantha",
-    'author_email': "pradeepm66@gmail.com",
-    'maintainer': "Pradeep Mantha",
-    'maintainer_email': "pmanth2@cct.lsu.edu",
-    'url': "https://github.com/saga-project/PilotMapReduce/wiki",
-    'license': "MIT",
-    'classifiers': [
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: No Input/Output (Daemon)',
-        'Intended Audience :: Developers',
+    'name'             : 'Pilot-MapReduce',
+    'version'          : short_version,
+    'description'      : "A Pilot-based MapReduce framework",
+    #'long_description' : (read('README.md') + '\n\n' + read('CHANGES.md')),
+    'author'           : 'RADICAL Group at Rutgers University',
+    'author_email'     : 'pradeepm66@gmail.com',
+    'maintainer'       : "Pradeep Mantha", 
+    'maintainer_email' : 'pradeepm66@gmail.com',
+    'url'              : 'https://github.com/saga-project/PilotMapReduce',
+    'license'          : 'MIT',
+    'keywords'         : "radical pilot MapReduce saga",
+    'classifiers'      :  [
+        'Development Status   :: 5 - Production/Stable',
+        'Intended Audience    :: Developers',
+        'Environment          :: Console',
+        'License              :: OSI Approved :: MIT',
         'Programming Language :: Python',
-        'License :: OSI Approved :: MIT License',
-        'Topic :: System :: Distributed Computing',
-        'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: POSIX',
-        'Operating System :: POSIX :: AIX',
-        'Operating System :: POSIX :: BSD',
-        'Operating System :: POSIX :: BSD :: BSD/OS',
-        'Operating System :: POSIX :: BSD :: FreeBSD',
-        'Operating System :: POSIX :: BSD :: NetBSD',
-        'Operating System :: POSIX :: BSD :: OpenBSD',
-        'Operating System :: POSIX :: GNU Hurd',
-        'Operating System :: POSIX :: HP-UX',
-        'Operating System :: POSIX :: IRIX',
-        'Operating System :: POSIX :: Linux',
-        'Operating System :: POSIX :: Other',
-        'Operating System :: POSIX :: SCO',
-        'Operating System :: POSIX :: SunOS/Solaris',
-        'Operating System :: Unix'
-        ],
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.5',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Topic                :: Utilities',
+        'Topic                :: System :: Distributed Computing',
+        'Operating System     :: MacOS :: MacOS X',
+        'Operating System     :: POSIX',
+        'Operating System     :: Unix',
+    ],
+    'packages'    : find_packages('src'),
+    'package_dir' : {'': 'src'},    
+    #'scripts'          : scripts,
+    'package_data'     : {'': ['*.sh', 'VERSION', ]},
+    'install_requires' : ['setuptools',
+                          'bigjob'],
+    #'tests_require'    : ['setuptools', 'nose'],
+    #'test_suite'       : 'sagapilot.tests',
+    'zip_safe'         : False,
+}
 
-    'packages': [ "pmr", "pmr.util"],
-    'include_package_data':True,
-    'scripts': scripts,
-    # mention data_files, even if empty, so install_data is called and
-    # VERSION gets copied
-    'data_files': [("", ["README","README"])],
-    'cmdclass': {
-        'install_data': our_install_data,
-        'sdist': our_sdist
-        }
-    }
+#-----------------------------------------------------------------------------
 
+setup (**setup_args)
 
-try:
-    # If setuptools is installed, then we'll add setuptools-specific arguments
-    # to the setup args.
-    import setuptools #@UnusedImport
-except ImportError:
-    pass
-else:
-    setup_args['install_requires'] = [
-        'bigjob'
-    ]
-    
-setup(**setup_args)
+#-----------------------------------------------------------------------------

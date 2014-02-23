@@ -1,4 +1,4 @@
-class reducer:
+class Reducer:
     """
         reducer: Class for managing Reduce phase of MapReduce Job
     

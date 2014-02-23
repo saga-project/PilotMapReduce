@@ -13,15 +13,18 @@ Pilot-MapReduce
 
 MapReduce
 --------
-.. automodule:: __init__
-   :members: 
+.. autoclass:: pmr.MapReduce
+   :members:
+   :special-members: __init__ 
 
 Mapper
 --------------
-.. automodule:: mapper
+.. autoclass:: pmr.Mapper
    :members:
+   :special-members: __init__
 
 Reducer
 --------------
-.. automodule:: reducer
+.. autoclass:: pmr.Reducer
    :members: 
+   :special-members: __init__

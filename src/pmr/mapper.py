@@ -1,4 +1,4 @@
-class mapper:
+class Mapper:
     """
         mapper: Class for managing Map phase of MapReduce Job
     

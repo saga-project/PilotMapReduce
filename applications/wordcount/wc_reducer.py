@@ -1,10 +1,10 @@
-from pmr.reducer import reducer
+from pmr.reducer import Reducer
 import sys
 
 
 if __name__ == "__main__":
     # Initialize Reduce job
-    reduceJob = reducer(sys.argv)         
+    reduceJob = Reducer(sys.argv)         
     
     # reduce function
     

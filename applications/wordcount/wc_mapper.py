@@ -1,9 +1,9 @@
 import sys
-from pmr.mapper import mapper
+from pmr.mapper import Mapper
     
 if __name__ == "__main__":
     # Initialize Map Job
-    mapJob = myMapper(sys.argv)
+    mapJob = Mapper(sys.argv)
           
     
     # map function    

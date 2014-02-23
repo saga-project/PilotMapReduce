@@ -9,11 +9,9 @@ __license__ = "MIT"
 
 import logging
 
-from pilot import PilotComputeService, ComputeDataService, PilotDataService, \
-    DataUnit, State
+from pilot import PilotComputeService, ComputeDataService, PilotDataService
 from pmr import util
 from pmr.util import constant
-import sys
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO)
