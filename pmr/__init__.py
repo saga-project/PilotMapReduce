@@ -2,9 +2,9 @@
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-__author__    = "Pradeep Mantha"
+__author__ = "Pradeep Mantha"
 __copyright__ = "Copyright 2011, Pradeep Mantha"
-__license__   = "MIT"
+__license__ = "MIT"
 
 
 import logging
@@ -28,35 +28,38 @@ class MapReduce(object):
     """ 
       
      
-    def __init__(self, pmrDesc,coordinationUrl):
+    def __init__(self, pmrDesc, coordinationUrl):
         """ 
             Initializes MapReduce with Pilot computes/Data description and
-            coordination system        
+            coordination system 
             
         """
             
         logger.info("Initialize Pilot-MapReduce")
+        
+        # Class variables.
         self._pilots = pmrDesc
-        self.coordinationUrl = coordinationUrl
+        self._coordinationUrl = coordinationUrl
         
-        self._inputDus=[]
+        self._inputDus = []
+        self._pdFTP = "ssh"
         
-        self._chunkDus=[]
+        self._chunkDus = []
         self._chunkDesc = None
         self._chunkExe = None
         
-        self._mapDus=[]
+        self._mapDus = []
         self._mapDesc = None
         self._mapExe = None
         
-        self.reduceDus=[]
+        self.reduceDus = []
         self._reduceDesc = None
         self._reduceExe = None
 
-        self.nbrReduces=1        
+        self._nbrReduces = 1        
         self._outputDu = None
              
-        self.pdFTP = "ssh"
+        
         
     
     def startPilot(self):
@@ -64,15 +67,16 @@ class MapReduce(object):
         
         logger.info("Start pilot service")
         try:
-            self.compute_data_service=ComputeDataService()    
-            self.pilot_compute_service=PilotComputeService(self.coordinationUrl)
-            self.pilot_data_service=PilotDataService(self.coordinationUrl)  
+            self.compute_data_service = ComputeDataService()    
+            self.pilot_compute_service = PilotComputeService(self._coordinationUrl)
+            self.pilot_data_service = PilotDataService(self._coordinationUrl)  
             self._startPilotComputeDatas()
         except:
             self._clean("Pilot service initialization failed - abort")
     
         
     def stopPilot(self):
+        """ Stops the pilot compute and data services """
         logger.info("Terminate pilot Service")
         try:
             self.compute_data_service.cancel()    
@@ -82,29 +86,57 @@ class MapReduce(object):
             raise Exception ("Pilot service termination failed - abort")          
         
     def setNbrReduces(self, nbrReduces):
-        self.nbrReduces=nbrReduces
+        """ 
+            Set the number of reduces of the MapReduce Job 
+            @param  nbrReduces: Takes number of Reduces as integer
+                         
+        """        
+        self._nbrReduces = nbrReduces
         
     def setChunk(self, chunkDesc):
+        """ 
+            Registers the chunk task description
+            @param  chunkDesc: SAGA Job Description of chunk task
+                         
+        """
+        
         self._chunkDesc = chunkDesc
                 
     def setMapper(self, mapDesc):
+        """ 
+            Registers the Map task description
+            @param  mapDesc: SAGA Job Description of Map task
+                         
+        """
+        
         self._mapDesc = mapDesc
         
-    def setReducer(self,reduceDesc):
+    def setReducer(self, reduceDesc):
+        """ 
+            Registers the Reduce task description
+            @param  reduceDesc: SAGA Job Description of Reduce task
+                         
+        """        
         self._reduceDesc = reduceDesc
 
     def setOutputPath(self, path):
+        """ 
+            Sets the output path to store the final results of MapReduce job
+            @param  reduceDesc: SAGA Job Description of Reduce task
+                         
+        """          
         self._outputPath = path
         
         
-        
-    def _clean(self,msg):
+    def _clean(self, msg):
         """ Stops  the pilot compute and data services """
 
         self.stopPilot()
         raise Exception(msg)
                 
     def _startPilotComputeDatas(self):
+        """ Starts  the pilot compute and data services """
+        
         def create(pilot):
             self.pilot_compute_service.create_pilot(pilot['pilot_compute'])
             self.pilot_data_service.create_pilot(pilot['pilot_data'])
@@ -116,6 +148,8 @@ class MapReduce(object):
                   
         
     def _loadDataIntoPD(self):
+        """ Loads input data and executables into Pilot-Data """
+
         logger.debug("Loading input data into Pilot-Data")
         try:
             self._loadInputData()
@@ -125,14 +159,16 @@ class MapReduce(object):
             
 
 
-    def _loadInputData(self):        
+    def _loadInputData(self):
+        """ Loads  input data into Pilot-Data """
+        
         for pilot in self._pilots:
             if pilot['input_url'].startswith('redis'):
                 # reconnect to Pilot-Data
                 self._inputDus.append(util.getDuUrl(pilot['input_url']))                
             else:      
                 desc = util.getEmptyDU(pilot['pilot_compute'])
-                desc['file_urls'] = util.getFileUrls(pilot['input_url'], self.pdFTP)
+                desc['file_urls'] = util.getFileUrls(pilot['input_url'], self._pdFTP)
                 temp = self.compute_data_service.submit_data_unit(desc)
                 pilot['input_url'] = temp.get_url()
                 self._inputDus.append(temp)
@@ -143,6 +179,8 @@ class MapReduce(object):
         map(lambda x: logger.info(x), self._pilots)
         
     def _loadExecutables(self):
+        """ Loads  executables into Pilot-Data """
+        
         if self._chunkDesc and self._chunkDesc.get('files', None):            
             desc = util.getEmptyDU(self._pilots[0]['pilot_compute'])
             desc['file_urls'] = self._chunkDesc['files']
@@ -161,50 +199,60 @@ class MapReduce(object):
         # Wait for the executable DUS
         util.waitDUs([self._chunkExe, self._mapExe, self._reduceExe])
         
-    def _chunk(self):        
-        """ for each file in inputDU create a Chunk task """
-        chunkCUs=[]
-        try:
-            for inputDu in self._inputDus:
-                temp = util.getEmptyDU(inputDu.data_unit_description)
-                temp = self.compute_data_service.submit_data_unit(temp)
-                for fName in inputDu.list_files():
-                    # for user defined ChunkDesc assign affinity.
-                    self._chunkDesc = util.setAffinity(self._chunkDesc, inputDu.data_unit_description)
-                    # Pass the input filename and output filename as arguments.
-                    self._chunkDesc['arguments'] = [fName, "%s-%s" % (fName, constant.CHUNK_FILE_PREFIX)]
-                    # Collect chunked files in output_du
-                    self._chunkDesc['output_data'] =  [ { temp.get_url(): ['*-chunk-*'] } ]
-                    # Get input file to Chunk CU. 
-                    self._chunkDesc["input_data"] = [ {inputDu.get_url(): [fName]} ] 
-                    if self._chunkExe is not None:
-                        self._chunkDesc["input_data"].append(self._chunkExe.get_url())
-                                                        
-                    chunkCUs.append(self.compute_data_service.submit_compute_unit(self._chunkDesc))
-                self._chunkDus.append(temp)
-    
-            # Wait for the chunk DUS                
-            util.waitDUs(self._chunkDus)
-            util.waitCUs(chunkCUs)
-        except:
-            self._clean("Chunk failed - Abort")
+    def _chunk(self): 
+        """ Chunks input data if Chunk task is defined """
+        
+        if self._chunkDesc:               
+            """ for each file in inputDU create a Chunk task """
+            chunkCUs = []
+            try:
+                for inputDu in self._inputDus:
+                    temp = util.getEmptyDU(inputDu.data_unit_description)
+                    temp = self.compute_data_service.submit_data_unit(temp)
+                    for fName in inputDu.list_files():
+                        # for user defined ChunkDesc assign affinity.
+                        self._chunkDesc = util.setAffinity(self._chunkDesc, inputDu.data_unit_description)
+                        # Pass the input filename and output filename as arguments.
+                        self._chunkDesc['arguments'] = [fName, "%s-%s" % (fName, constant.CHUNK_FILE_PREFIX)]
+                        # Collect chunked files in output_du
+                        self._chunkDesc['output_data'] = [ { temp.get_url(): ['*-chunk-*'] } ]
+                        # Get input file to Chunk CU. 
+                        self._chunkDesc["input_data"] = [ {inputDu.get_url(): [fName]} ] 
+                        if self._chunkExe is not None:
+                            self._chunkDesc["input_data"].append(self._chunkExe.get_url())
+                                                            
+                        chunkCUs.append(self.compute_data_service.submit_compute_unit(self._chunkDesc))
+                    self._chunkDus.append(temp)
+        
+                # Wait for the chunk DUS                
+                util.waitDUs(self._chunkDus)
+                util.waitCUs(chunkCUs)
+            except:
+                self._clean("Chunk failed - Abort")
+        else:
+            logger.info("Ignoring chunking of input data, as Chunk Description is not set for the MapReduce Job")
             
 
     def _map(self):
+        """ Map Phase """
         
-        for _ in range(self.nbrReduces):
+        # Create output DUS one for each reduce to collect all the Map Task results 
+        
+        for _ in range(self._nbrReduces):
             temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
             self.reduceDus.append(self.compute_data_service.submit_data_unit(temp))        
         util.waitDUs(self.reduceDus)
 
+        # Create task for each chunk in all the chunk data units
+        
         mapCUs = []
         try:
             for cdu in self._chunkDus:
                 for cfName in cdu.list_files():
                     mapTask = util.setAffinity(self._mapDesc, cdu.data_unit_description)
-                    mapTask['arguments'] = [cfName,self.nbrReduces] + self._mapDesc.get('arguments',[])
-                    mapTask['output_data'] =[]
-                    for i in range(self.nbrReduces):
+                    mapTask['arguments'] = [cfName, self._nbrReduces] + self._mapDesc.get('arguments', [])
+                    mapTask['output_data'] = []
+                    for i in range(self._nbrReduces):
                         mapTask['output_data'].append({ self.reduceDus[i].get_url(): [constant.MAP_PARTITION_FILE_REGEX + str(i)] })
                     mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ] 
                     if self._mapExe is not None:
@@ -217,16 +265,19 @@ class MapReduce(object):
             self._clean("Map Phase failed - Abort")                    
 
     def _reduce(self):
-        reduceCUs = []
+        """ Reduce Phase """
+        
+        # Create DU to collect output data of all the reduce tasks
         temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
-        self._outputDu = self.compute_data_service.submit_data_unit(temp)        
-        
+        self._outputDu = self.compute_data_service.submit_data_unit(temp)                
         util.waitDUs([self._outputDu])
-        
+
+        # Create reduce for each reduce DU 
+        reduceCUs = []        
         try:
             for rdu in self.reduceDus:
                 reduceTask = util.setAffinity(self._reduceDesc, rdu.data_unit_description)
-                reduceTask['arguments'] = [":".join(rdu.list_files())] + self._reduceDesc.get('arguments',[])
+                reduceTask['arguments'] = [":".join(rdu.list_files())] + self._reduceDesc.get('arguments', [])
                 reduceTask['input_data'] = [rdu.get_url()]
                 reduceTask['output_data'] = [{self._outputDu.get_url(): ['reduce-*'] }]
                 if self._mapExe is not None:
@@ -239,17 +290,29 @@ class MapReduce(object):
             self._clean("Reduce Phase failed - Abort")                  
 
     def _collectOutput(self):
+        """ Export Output DU to the user defined output path """
+        
         self._outputDu.export(self._outputPath)
 
         
-    def setPartitioner(self):
-        raise NotImplementedError
-        
 
     def getDetails(self):
+        """ 
+            Returns the execution time of MapReduce phases
+        
+            @return: dictionary with execution timing details of MapReduce phases
+        
+        """  
         raise NotImplementedError
     
     def chunkOnly(self, inputDu):
+        """ 
+            Executes the chunk Job only
+        
+            @param inputDu: Takes input Data Units as Input argument
+            @return: List of chunk task output Data Units 
+        
+        """          
         self._inputDus = inputDu
         if self._inputDus:
             self._loadDataIntoPD()
@@ -260,6 +323,13 @@ class MapReduce(object):
         
     
     def mapOnly(self, chunkDus):
+        """ 
+            Executes the Map Job only
+        
+            @param mapDus: Takes map chunk/split Data Units as Input
+            @return: List of Map task output Data Units 
+        
+        """        
         self._chunkDus = chunkDus
         if self._chunkDus:
             self._map()
@@ -269,6 +339,14 @@ class MapReduce(object):
     
     
     def reduceOnly(self, mapDus):
+        """ 
+            Executes the Reduce job only
+        
+            @param mapDus: Takes map task Data Units as Input
+            @return: Output Data Unit 
+        
+        """
+        
         self._mapDus = mapDus
         if self._mapDus:
             self._reduce()
@@ -278,6 +356,7 @@ class MapReduce(object):
             
     
     def runJob(self):
+        """ Executes the entire MapReduce workflow """
         self.startPilot()
         self._loadDataIntoPD()
         self._chunk()

@@ -4,24 +4,19 @@ from pmr import MapReduce
 
 COORDINATION_URL="redis://localhost:6379"
 
-
 def wordCountJob():
     chunkDesc = { "executable": "split -l 50" }
     
     mapDesc = { "executable": "python wc_mapper.py",
                   "number_of_processes": 1,
                   "spmd_variation":"single",
-                  "output": "stdout.txt",
-                  "error": "stderr.txt",
-                  "files" : ['ssh://localhost/' + "/Users/pmantha/Documents/python/MapReduceV2/applications/wordcount/wc_mapper.py"]
+                  "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/wordcount/wc_mapper.py")]
                   }
     
     reduceDesc = { "executable": "python wc_reducer.py",    		  
     		   "number_of_processes": 1,
     		   "spmd_variation":"single",
-    		   "output": "stdout.txt",
-    		   "error": "stderr.txt",
-               "files" : ['ssh://localhost/' + "/Users/pmantha/Documents/python/MapReduceV2/applications/wordcount/wc_reducer.py"]
+               "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/wordcount/wc_reducer.py")]
     		 }
     
     pmrDesc = []
@@ -39,14 +34,14 @@ def wordCountJob():
                                    "affinity_datacenter_label": "eu-de-south",              
                                    "affinity_machine_label": "mymachine-1"                              
                                    },
-                    'input_url': 'sftp://localhost/'+ os.getenv("HOME") + "/data"
+                    'input_url': 'sftp://localhost/'+ os.path.join(os.getcwd(), "../resources/data/wordcount")
                     })
     
 
     job = MapReduce(pmrDesc, COORDINATION_URL)
     
     job.setNbrReduces(8)
-    job.setOutputPath("/Users/pmantha/output")
+    job.setOutputPath(os.getenv("HOME")+"/output")
     job.setChunk(chunkDesc)
     job.setMapper(mapDesc)
     job.setReducer(reduceDesc)

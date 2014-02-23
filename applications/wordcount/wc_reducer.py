@@ -7,23 +7,25 @@ if __name__ == "__main__":
     reduceJob = reducer(sys.argv)         
     
     # reduce function
-    count={}
+    
+    count = {}        
+    # split the map emitted to get words count from each partition file                       
     for pName in reduceJob.partitionFiles:
         with open(pName) as infile:
             for line in infile:
-                tokens=line.split(",")
+                tokens = line.split(",")
                 
-                # Actual word might contain "," 
+                # Actual word might contain "," and count is last token. 
                 value = int(tokens[-1])
                 word = ",".join(tokens[:-1])
                 
                 if count.has_key(word):
-                    count[word]=count[word]+ value
+                    count[word] = count[word] + value
                 else:
                     count[word] = value
 
-    for word,count in count.iteritems():                
-        reduceJob.emit( word, count )                
+    for word, count in count.iteritems():                
+        reduceJob.emit(word, count)                
 
-    ## Finalize reduce job   
+    # # Finalize reduce job   
     reduceJob.finalize() 
