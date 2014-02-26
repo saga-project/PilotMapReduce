@@ -11,6 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
+   intro.rst
+   installation.rst
+   examples/index.rst
    apidoc.rst
 
 

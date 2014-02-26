@@ -19,7 +19,7 @@ def wordCountJob():
                                        "affinity_datacenter_label": "eu-de-south",
                                        "affinity_machine_label": "mymachine-1"                              
                                      },
-                    'input_url'    : 'sftp://localhost/' + os.path.join(os.getcwd(), "../resources/data/wordcount")
+                    'input_url'    : 'sftp://localhost/' + os.getenv("HOME") + "/data"
                   })
     
     job = pmr.MapReduce(pmrDesc, COORDINATION_URL)
@@ -31,13 +31,13 @@ def wordCountJob():
     mapDesc   = { "executable": "python wc_mapper.py",
                   "number_of_processes": 1,
                   "spmd_variation":"single",
-                  "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/wordcount/wc_mapper.py")]
+                  "files" : ['ssh://localhost/' + os.getenv("HOME") + "/wc_mapper.py"]
                 }
     
     reduceDesc = { "executable": "python wc_reducer.py", 		  
                     "number_of_processes": 1,
                     "spmd_variation":"single",
-                    "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/wordcount/wc_reducer.py")]
+                    "files" : ['ssh://localhost/' + os.getenv("HOME") + "/wc_reducer.py"]
                  }
     
 

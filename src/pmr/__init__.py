@@ -14,3 +14,5 @@ from pmr.mapreduce                   import MapReduce
 from pmr.mapper                      import Mapper
 from pmr.reducer                     import Reducer    
 # ------------------------------------------------------------------------------
+from pmr.util.version             import version
+from pmr.util.logger              import logger

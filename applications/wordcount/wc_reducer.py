@@ -6,8 +6,7 @@ if __name__ == "__main__":
     # Initialize Reduce job
     reduceJob = Reducer(sys.argv)         
     
-    # reduce function
-    
+    # Reduce function    
     count = {}        
     # split the map emitted to get words count from each partition file                       
     for pName in reduceJob.partitionFiles:
@@ -27,5 +26,5 @@ if __name__ == "__main__":
     for word, count in count.iteritems():                
         reduceJob.emit(word, count)                
 
-    # # Finalize reduce job   
+    # Finalize reduce job   
     reduceJob.finalize() 
