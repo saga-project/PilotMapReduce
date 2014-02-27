@@ -1,7 +1,6 @@
 import os
 import time
 
-#from progressbar import Bar, ETA, Percentage, ProgressBar
 import saga
 import saga.filesystem
 
@@ -57,17 +56,9 @@ def waitPilots(pilots):
 def _wait(units , states):
     """ Wait for the untils until they are completed/failed """
     count={}
-    #pbar={}    
+
     units = filter(lambda i: i!=None, units)
     if len(units) > 0:
-        #for s in states:
-        #    pbar[s] = ProgressBar(widgets=[s, Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()        
-        # pbar['Other'] = ProgressBar(widgets=['Other', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
-        # pbar['Running'] = ProgressBar(widgets=['Running', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
-        # pbar['Done'] = ProgressBar(widgets=['Done', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
-        # pbar['Failed'] = ProgressBar(widgets=['Done', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
-        
-        
         while(True):
             for s in states:
                 count[s]=0
@@ -81,15 +72,12 @@ def _wait(units , states):
                 count[s] = uStates.count(s)
                 if s in states:
                     completeJobs = completeJobs + count[s]                             
-                #pbar[s].update(count[s])
             
             count['Other'] = len(units)-completeJobs
-            #pbar['Other'].update(count['Other'])
-            
+
             logger.debug(count)            
         
             if count['Other'] > 0:
                 time.sleep(2)
             else:
-                #map(lambda pb: pb.finish(), pbar.values())
                 break

@@ -123,7 +123,6 @@ setup_args = {
     'package_data'     : {'': ['*.sh', 'VERSION', ]},
     'install_requires' : ['setuptools',
                           'bigjob',
-                          'progressbar',
                           'radical.utils'],
     #'tests_require'    : ['setuptools', 'nose'],
     #'test_suite'       : 'sagapilot.tests',

@@ -15,7 +15,6 @@ installed automatically as dependencies.
 * Python >= 2.7
 
 * BigJob (https://pypi.python.org/pypi/BigJob)
-* progressbar (https://pypi.python.org/pypi/progressbar/2.3-dev)
 
 Installation
 ============
