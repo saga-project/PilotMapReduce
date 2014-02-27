@@ -10,4 +10,6 @@ scheduling and monitoring from the resource management. PMR exposes an easy-to-u
 needed by any MapReduce algorithm, while hiding the more complex functionality, such as chunking/splitting of the input, sorting the intermediate 
 results, managing and coordinating the map & reduce tasks and related data, etc., which are implemented by the framework.
 
-.. image:: images/architecture.pdf
+Below is the architecture of Pilot-MapReduce
+
+.. image:: images/architecture.png
