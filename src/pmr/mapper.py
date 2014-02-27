@@ -22,7 +22,8 @@ class Mapper:
     
     def partition(self, key):
         """ 
-        Default partition function
+        Default partition function. This function could be overwritten by custom
+        partition functions.
         
         @param key: map task emitted key value
         @return: partition number into which the key,value pair has to be written to  

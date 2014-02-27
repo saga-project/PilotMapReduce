@@ -1,21 +1,14 @@
 #!/usr/bin/env python
 
-# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
-
 __author__ = "Pradeep Mantha"
 __copyright__ = "Copyright 2011, Pradeep Mantha"
 __license__ = "MIT"
 
 
-import logging
-
 from pilot import PilotComputeService, ComputeDataService, PilotDataService
 from pmr import util
 from pmr.util import constant
-
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.INFO)
-logger = logging.getLogger('PMR')
+from pmr.util.logger import logger
 
 
 class MapReduce(object):
@@ -148,7 +141,7 @@ class MapReduce(object):
     def _loadDataIntoPD(self):
         """ Loads input data and executables into Pilot-Data """
 
-        logger.debug("Loading input data into Pilot-Data")
+        logger.info("Loading input data into Pilot-Data")
         try:
             self._loadInputData()
             self._loadExecutables()
@@ -202,6 +195,7 @@ class MapReduce(object):
         
         if self._chunkDesc:               
             """ for each file in inputDU create a Chunk task """
+            logger.info("Chunking input data")
             chunkCUs = []
             try:
                 for inputDu in self._inputDus:
@@ -222,7 +216,8 @@ class MapReduce(object):
                         chunkCUs.append(self.compute_data_service.submit_compute_unit(self._chunkDesc))
                     self._chunkDus.append(temp)
         
-                # Wait for the chunk DUS                
+                # Wait for the chunk DUS    
+                logger.debug("Wait for chunk DUS/CUS")            
                 util.waitDUs(self._chunkDus)
                 util.waitCUs(chunkCUs)
             except:
@@ -235,7 +230,7 @@ class MapReduce(object):
         """ Map Phase """
         
         # Create output DUS one for each reduce to collect all the Map Task results 
-        
+        logger.debug("Creating DUS to store Map Output results")
         for _ in range(self._nbrReduces):
             temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
             self.reduceDus.append(self.compute_data_service.submit_data_unit(temp))        
@@ -257,7 +252,8 @@ class MapReduce(object):
                         mapTask["input_data"].append(self._mapExe.get_url())
                     mapCUs.append(self.compute_data_service.submit_compute_unit(mapTask))
         
-            # Wait for the map DUS and CUS                
+            # Wait for the map DUS and CUS   
+            logger.info("Create & submitting Map tasks")             
             util.waitCUs(mapCUs)
         except:
             self._clean("Map Phase failed - Abort")                    
@@ -265,6 +261,7 @@ class MapReduce(object):
     def _reduce(self):
         """ Reduce Phase """
         
+        logger.debug("Creating DUS to store Reduce Output results")
         # Create DU to collect output data of all the reduce tasks
         temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
         self._outputDu = self.compute_data_service.submit_data_unit(temp)                
@@ -282,7 +279,8 @@ class MapReduce(object):
                     reduceTask["input_data"].append(self._reduceExe.get_url())
                 reduceCUs.append(self.compute_data_service.submit_compute_unit(reduceTask))
                
-            # Wait for the map DUS and CUS                
+            # Wait for the map DUS and CUS 
+            logger.info("Create & submitting Map tasks")                
             util.waitCUs(reduceCUs)
         except:
             self._clean("Reduce Phase failed - Abort")                  

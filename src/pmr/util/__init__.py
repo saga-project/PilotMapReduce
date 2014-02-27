@@ -1,16 +1,17 @@
 import os
 import time
 
-from progressbar import Bar, ETA, Percentage, ProgressBar
+#from progressbar import Bar, ETA, Percentage, ProgressBar
 import saga
 import saga.filesystem
 
 from pilot import DataUnit
+from pmr.util.logger import logger
 
 
 
 class constant(object):
-    JOB_COMPLETION_STATUS = ['Done','Failed']
+    JOB_COMPLETION_STATUS = ['Done','Running','Failed']
     DU_OR_PILOT_COMPLETION_STATUS = ['Running','Failed']
     CHUNK_FILE_PREFIX='`hostname`-chunk-'
     MAP_PARTITION_FILE_REGEX = '*-sorted-map-partition-*'
@@ -56,12 +57,16 @@ def waitPilots(pilots):
 def _wait(units , states):
     """ Wait for the untils until they are completed/failed """
     count={}
-    pbar={}    
+    #pbar={}    
     units = filter(lambda i: i!=None, units)
     if len(units) > 0:
-        for s in states:
-            pbar[s] = ProgressBar(widgets=[s, Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()        
-        pbar['Other'] = ProgressBar(widgets=['Other', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
+        #for s in states:
+        #    pbar[s] = ProgressBar(widgets=[s, Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()        
+        # pbar['Other'] = ProgressBar(widgets=['Other', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
+        # pbar['Running'] = ProgressBar(widgets=['Running', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
+        # pbar['Done'] = ProgressBar(widgets=['Done', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
+        # pbar['Failed'] = ProgressBar(widgets=['Done', Percentage(), Bar(), ' ', ETA()], maxval=len(units)).start()
+        
         
         while(True):
             for s in states:
@@ -69,12 +74,14 @@ def _wait(units , states):
             count['Other']=0
             
             uStates = map(lambda i: i.get_state(), units) 
-            for s in states:                
-                count[s] = uStates.count(s)
-                pbar[s].update(count[s])
+            for s in states:     
+                count[s] = uStates.count(s)                
+                #pbar[s].update(count[s])
             
             count['Other'] = len(units)-sum(count.values())
-            pbar['Other'].update(count['Other'])            
+            #pbar['Other'].update(count['Other'])
+            
+            logger.debug(count)            
         
             if count['Other'] > 0:
                 time.sleep(2)

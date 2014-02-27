@@ -161,13 +161,13 @@ Define Chunk, Map and Reduce tasks as dict representation of `SAGA Job descripti
     mapDesc    = { "executable": "python wc_mapper.py",
                    "number_of_processes": 1,
                    "spmd_variation":"single",
-                   "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/wordcount/wc_mapper.py")]
+                   "files" : ['ssh://localhost/' + os.getenv("HOME") + "/wc_mapper.py")]
                  }
     
     reduceDesc = { "executable": "python wc_reducer.py",              
                    "number_of_processes": 1,
                    "spmd_variation":"single",
-                   "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/wordcount/wc_reducer.py")]
+                   "files" : ['ssh://localhost/' + os.getenv("HOME") + "/wc_reducer.py")]
                  }
                  
 .. note:: Attribute `files` is not a SAGA Job description attribute. This attribute takes a list of files to be transferred

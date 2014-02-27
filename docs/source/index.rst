@@ -15,6 +15,7 @@ Contents:
    installation.rst
    examples/index.rst
    apidoc.rst
+   developer.rst
 
 
 
