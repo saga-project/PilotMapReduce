@@ -11,7 +11,7 @@ from pmr.util.logger import logger
 
 
 class constant(object):
-    JOB_COMPLETION_STATUS = ['Done','Running','Failed']
+    JOB_COMPLETION_STATUS = ['Done','Failed']
     DU_OR_PILOT_COMPLETION_STATUS = ['Running','Failed']
     CHUNK_FILE_PREFIX='`hostname`-chunk-'
     MAP_PARTITION_FILE_REGEX = '*-sorted-map-partition-*'
@@ -74,11 +74,16 @@ def _wait(units , states):
             count['Other']=0
             
             uStates = map(lambda i: i.get_state(), units) 
-            for s in states:     
-                count[s] = uStates.count(s)                
+            allStates = set(uStates)
+            completeJobs = 0
+            
+            for s in allStates:
+                count[s] = uStates.count(s)
+                if s in states:
+                    completeJobs = completeJobs + count[s]                             
                 #pbar[s].update(count[s])
             
-            count['Other'] = len(units)-sum(count.values())
+            count['Other'] = len(units)-completeJobs
             #pbar['Other'].update(count['Other'])
             
             logger.debug(count)            
