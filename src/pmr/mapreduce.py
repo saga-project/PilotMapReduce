@@ -280,7 +280,7 @@ class MapReduce(object):
                 reduceCUs.append(self.compute_data_service.submit_compute_unit(reduceTask))
                
             # Wait for the map DUS and CUS 
-            logger.info("Create & submitting Map tasks")                
+            logger.info("Create & submitting Reduce tasks")                
             util.waitCUs(reduceCUs)
         except:
             self._clean("Reduce Phase failed - Abort")                  
