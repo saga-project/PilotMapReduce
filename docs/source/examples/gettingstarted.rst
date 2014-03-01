@@ -31,7 +31,7 @@ In order to use Pilot-MapReduce in your Python application, you need to import t
 
     import pmr
 
-You can check / print the version of your SAGA-Pilot installation via the
+You can check / print the version of your Pilot-MapReduce installation via the
 ``version`` property.
 
 .. code-block:: python

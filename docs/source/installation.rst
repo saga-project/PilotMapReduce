@@ -59,6 +59,7 @@ set up a vritualenv):
     python setup.py install
 
 Optionally, you can try to run the unit tests:
+
 # Not developed yet
 
 .. code-block:: bash
