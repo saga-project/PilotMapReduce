@@ -10,6 +10,9 @@ from pmr import util
 from pmr.util import constant
 from pmr.util.logger import logger
 
+HADOOP=1
+
+
 
 class MapReduce(object):
     
@@ -30,7 +33,8 @@ class MapReduce(object):
         
         # Class variables.
         self._pilots = pmrDesc
-        self._coordinationUrl = coordinationUrl
+        self._coordinationUrl = coordinationUrl        
+        self._pilotComputes = []
         
         self._inputDus = []
         self._pdFTP = "ssh"
@@ -49,10 +53,14 @@ class MapReduce(object):
 
         self._nbrReduces = 1        
         self._outputDu = None
-             
+
+        self._pilotInfo = [{}] * len(self._pilots)
         
         
-    
+        self.compute_data_service = None
+        self.pilot_compute_service = None
+        self.pilot_data_service = None
+
     def startPilot(self):
         """ Start the pilot compute and data services """
         
@@ -64,6 +72,7 @@ class MapReduce(object):
             self._startPilotComputeDatas()
         except:
             self._clean("Pilot service initialization failed - abort")
+    
     
         
     def stopPilot(self):
@@ -92,6 +101,7 @@ class MapReduce(object):
         """
         
         self._chunkDesc = chunkDesc
+    
                 
     def setMapper(self, mapDesc):
         """ 
@@ -129,13 +139,20 @@ class MapReduce(object):
         """ Starts  the pilot compute and data services """
         
         def create(pilot):
-            self.pilot_compute_service.create_pilot(pilot['pilot_compute'])
+            self._pilotComputes.append(self.pilot_compute_service.create_pilot(pilot['pilot_compute']))
             self.pilot_data_service.create_pilot(pilot['pilot_data'])
-            
+
         map(create, self._pilots)
             
         self.compute_data_service.add_pilot_compute_service(self.pilot_compute_service)
-        self.compute_data_service.add_pilot_data_service(self.pilot_data_service)    
+        self.compute_data_service.add_pilot_data_service(self.pilot_data_service)
+        util.waitPilots(self._pilotComputes)  
+        
+        
+    def getPilotComputes(self):
+        """ Get pilot computes """
+        return self._pilotComputes
+      
                   
         
     def _loadDataIntoPD(self):
@@ -333,6 +350,14 @@ class MapReduce(object):
         else:
             self.clean("Chunk DUS are invalid")
     
+    def submitComputeUnit(self, desc):
+        """ 
+        Submits SAGA Job description to Pilot
+        
+        @param desc: SAGA Job description  
+        """
+        self.compute_data_service.submit_compute_unit(desc)
+        
     
     def reduceOnly(self, mapDus):
         """ 
