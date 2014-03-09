@@ -28,3 +28,8 @@ Reducer
 .. autoclass:: pmr.Reducer
    :members: 
    :special-members: __init__
+   
+Hadoop
+-------   
+.. autoclass:: pmr.Hadoop
+   :members:

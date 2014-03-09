@@ -10,9 +10,6 @@ from pmr import util
 from pmr.util import constant
 from pmr.util.logger import logger
 
-HADOOP=1
-
-
 
 class MapReduce(object):
     

@@ -1,5 +1,7 @@
 import os
-from pmr.hadoop import Hadoop, util
+import pmr
+from pmr import util
+
 
 COORDINATION_URL = "redis://localhost:6379"
 
@@ -22,12 +24,10 @@ def wordCountJob():
                   })
     
     # Create Hadoop Job
-    job = Hadoop(pmrDesc, COORDINATION_URL)
+    job = pmr.Hadoop(pmrDesc, COORDINATION_URL)
     
-    # setup  cluster
+    # setup Hadoop cluster
     job.setUpCluster()
-    
-    
     
     # SAGA Job dictionary description of Hadoop Job.             
     hadoopDesc = {  "executable": "hadoop jar $HADOOP_PREFIX/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.2.0.jar wordcount",
@@ -36,7 +36,9 @@ def wordCountJob():
     
     
     # Submit Hadoop Job
-    hadoopJob = job.submitJob(hadoopDesc)    
+    hadoopJob = job.submitJob(hadoopDesc)   
+    
+    # Wait for Hadoop Job 
     util.waitCUs(hadoopJob) 
     
     # Tear down cluster    
