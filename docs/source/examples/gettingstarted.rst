@@ -1,8 +1,8 @@
 .. _chapter_example_gettinstarted:
 
-***************
+
 Getting Started 
-***************
+===============
 
 ** It is highly recommended that you carefully read and understand SAGA-Python and Pilot-Abstractions, Pilot-MapReduce 
 all of this before you go off and start developing your own applications. **

@@ -25,7 +25,7 @@ def setup(nodes):
     # Write to slaves
     fh = open("slaves","w")
     if len(nodeList) > 1:
-        fh.write("\n".join(nodeList[1:]))
+        fh.write("\n".join(nodeList))
     else:
         fh.write(nodeList[0])
     fh.close()
