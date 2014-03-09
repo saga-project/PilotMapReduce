@@ -118,7 +118,7 @@ setup_args = {
     ],
     'packages'    : find_packages('src'),
     'package_dir' : {'': 'src'},    
-    'py_modules' : ['cluster.hadoop.setup'],
+    'py_modules' : ['cluster.hadoop.setup','cluster.hadoop.stop'],
     'package_data'     : {'': ['*.sh', 'VERSION', ]},
     'install_requires' : ['setuptools',
                           'bigjob',
