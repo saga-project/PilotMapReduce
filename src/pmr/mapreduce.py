@@ -70,8 +70,8 @@ class MapReduce(object):
             self.pilot_compute_service = PilotComputeService(self._coordinationUrl)
             self.pilot_data_service = PilotDataService(self._coordinationUrl)  
             self._startPilotComputeDatas()
-        except:
-            self._clean("Pilot service initialization failed - abort")
+        except Exception, ex:
+            self._clean(ex, "Pilot service initialization failed - abort")
     
     
         
@@ -82,7 +82,7 @@ class MapReduce(object):
             self.compute_data_service.cancel()    
             self.pilot_compute_service.cancel()
             self.pilot_data_service.cancel()
-        except:
+        except Exception, ex:
             raise Exception ("Pilot service termination failed - abort")          
         
     def setNbrReduces(self, nbrReduces):
@@ -129,11 +129,12 @@ class MapReduce(object):
         self._outputPath = path
         
         
-    def _clean(self, msg):
+    def _clean(self, ex, msg):
         """ Stops  the pilot compute and data services """
 
+        print "Error: %s" % ex
         self.stopPilot()
-        raise Exception(msg)
+        print msg
                 
     def _startPilotComputeDatas(self):
         """ Starts  the pilot compute and data services """
@@ -162,8 +163,8 @@ class MapReduce(object):
         try:
             self._loadInputData()
             self._loadExecutables()
-        except:
-            self._clean("Loading input data failed - abort")
+        except Exception, ex:
+            self._clean(ex, "Loading input data failed - abort")
             
 
 
@@ -237,8 +238,8 @@ class MapReduce(object):
                 logger.debug("Wait for chunk DUS/CUS")            
                 util.waitDUs(self._chunkDus)
                 util.waitCUs(chunkCUs)
-            except:
-                self._clean("Chunk failed - Abort")
+            except Exception, ex:
+                self._clean(ex, "Chunk failed - Abort")
         else:
             logger.info("Ignoring chunking of input data, as Chunk Description is not set for the MapReduce Job")
             
@@ -272,8 +273,8 @@ class MapReduce(object):
             # Wait for the map DUS and CUS   
             logger.info("Create & submitting Map tasks")             
             util.waitCUs(mapCUs)
-        except:
-            self._clean("Map Phase failed - Abort")                    
+        except Exception, ex:
+            self._clean(ex, "Map Phase failed - Abort")                    
 
     def _reduce(self):
         """ Reduce Phase """
@@ -299,8 +300,8 @@ class MapReduce(object):
             # Wait for the map DUS and CUS 
             logger.info("Create & submitting Reduce tasks")                
             util.waitCUs(reduceCUs)
-        except:
-            self._clean("Reduce Phase failed - Abort")                  
+        except Exception, ex:
+            self._clean(ex, "Reduce Phase failed - Abort")                  
 
     def _collectOutput(self):
         """ Export Output DU to the user defined output path """
