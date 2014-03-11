@@ -13,7 +13,8 @@ __license__   = "MIT"
 from pmr.mapreduce                   import MapReduce 
 from pmr.mapper                      import Mapper
 from pmr.reducer                     import Reducer  
-from pmr.hadoop                      import Hadoop     
+from pmr.hadoop                      import Hadoop
+from pmr.spark                       import Spark      
 # ------------------------------------------------------------------------------
 from pmr.util.version             import version
 from pmr.util.logger              import logger
