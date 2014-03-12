@@ -33,3 +33,8 @@ Hadoop
 -------   
 .. autoclass:: pmr.Hadoop
    :members:
+   
+Spark
+-------   
+.. autoclass:: pmr.Spark
+   :members:   
