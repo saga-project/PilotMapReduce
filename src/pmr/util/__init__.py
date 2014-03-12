@@ -60,21 +60,18 @@ def _wait(units , states):
     units = filter(lambda i: i!=None, units)
     if len(units) > 0:
         while(True):
-            for s in states:
-                count[s]=0
-            count['Other']=0
-            
             uStates = map(lambda i: i.get_state(), units) 
             allStates = set(uStates)
+            for s in states:
+                count[s] = 0
             completeJobs = 0
             
-            for s in allStates:
-                count[s] = uStates.count(s)
+            for s in allStates:                
                 if s in states:
-                    completeJobs = completeJobs + count[s]                             
-            
-            count['Other'] = len(units)-completeJobs
-
+                    count[s] = uStates.count(s)
+                    completeJobs = completeJobs + count[s]
+                count['Other'] = len(units)-completeJobs
+                    
             logger.debug(count)            
         
             if count['Other'] > 0:

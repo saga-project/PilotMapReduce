@@ -65,6 +65,7 @@ class Hadoop(MapReduce):
         
         """ Submit Hadoop Job description """
         
+        logger.info("Submitting Hadoop Jobs")
         hadoopTasks =[]
         i=0
         for pilot in self._pilots:
@@ -74,8 +75,7 @@ class Hadoop(MapReduce):
             task['executable'] = 'HADOOP_CONF_DIR=$PWD;' + task['executable']
             task['input_data'] = [self._pilotInfo[i]['hadoopConfDir'].get_url()]            
             hadoopTasks.append(self.compute_data_service.submit_compute_unit(task))            
-            i=i+1    
-            
+            i=i+1            
         return hadoopTasks    
         
     

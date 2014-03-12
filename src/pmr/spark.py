@@ -68,7 +68,7 @@ class Spark(MapReduce):
     def submitJob(self,desc):
         
         """ Submit spark Job description """
-        
+        logger.info("Submitting Spark Job")
         sparkTasks =[]
         i=0
         for pilot in self._pilots:
@@ -78,9 +78,9 @@ class Spark(MapReduce):
             task['executable'] = 'SPARK_CONF_DIR=$PWD;' + task['executable']
             task['input_data'] = [self._pilotInfo[i]['sparkConfDir'].get_url()]            
             sparkTasks.append(self.compute_data_service.submit_compute_unit(task))            
-            i=i+1    
-            
-        return sparkTasks    
+            i=i+1            
+        return sparkTasks   
+     
         
     
     def stopCluster(self):
