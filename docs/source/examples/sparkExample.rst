@@ -12,4 +12,4 @@ The Complete Example
 After putting it all together, your first Pilot-Spark application will look somewhat 
 like the script below.
 
-.. literalinclude:: ../../../examples/exSpark.py    
+.. literalinclude:: ../../../examples/exampleSpark.py    

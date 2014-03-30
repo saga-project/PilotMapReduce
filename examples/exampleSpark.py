@@ -23,10 +23,10 @@ def wordCountJob():
                                      },                    
                   })
     
-    # Create Hadoop Job
+    # Create Spark Job
     job = pmr.Spark(pmrDesc, COORDINATION_URL)
     
-    # setup Hadoop cluster
+    # setup Spark cluster
     job.setUpCluster()
     
     sparkContext = "spark://" + job.getSparkMaster() + ":7077" 
@@ -44,11 +44,8 @@ def wordCountJob():
                  }    
         
     # Submit Spark Job
-    sparkJob = job.submitJob(sparkDesc)   
-    
-    # Wait for Spark Job 
-    util.waitCUs(sparkJob) 
-    
+    job.submitJob(sparkDesc)   
+        
     # Tear down cluster    
     job.stopCluster()
     

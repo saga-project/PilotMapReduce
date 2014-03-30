@@ -29,17 +29,14 @@ def wordCountJob():
     # setup Hadoop cluster
     job.setUpCluster()
     
-    # SAGA Job dictionary description of Hadoop Job.             
-    hadoopDesc = {  "executable": "hadoop jar $HADOOP_PREFIX/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.2.0.jar wordcount",
+    # SAGA Job dictionary description of Yarn Job.             
+    hadoopDesc = {  "executable": "hadoop jar $HADOOP_PREFIX/hadoop-examples-1.2.1.jar wordcount",
                     "arguments": ['$HOME/data', '$HOME/Output']                    
                  }
     
     
     # Submit Hadoop Job
-    hadoopJob = job.submitJob(hadoopDesc)   
-    
-    # Wait for Hadoop Job 
-    util.waitCUs(hadoopJob) 
+    job.submitJob(hadoopDesc)
     
     # Tear down cluster    
     job.stopCluster()

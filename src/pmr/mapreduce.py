@@ -373,6 +373,13 @@ class MapReduce(object):
         else:
             self.clean("Map DUS are invalid")
             
+    def mapReduceOnly(self):
+        self._loadDataIntoPD()
+        self._chunk()
+        self._map()
+        self._reduce()
+        self._collectOutput()                     
+        
     
     def runJob(self):
         """ Executes the entire MapReduce workflow """

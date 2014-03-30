@@ -78,7 +78,8 @@ class Spark(MapReduce):
             task['executable'] = 'SPARK_CONF_DIR=$PWD;' + task['executable']
             task['input_data'] = [self._pilotInfo[i]['sparkConfDir'].get_url()]            
             sparkTasks.append(self.compute_data_service.submit_compute_unit(task))            
-            i=i+1            
+            i=i+1
+        util.waitCUs(sparkTasks)            
         return sparkTasks   
      
         

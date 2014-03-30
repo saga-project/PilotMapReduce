@@ -11,13 +11,13 @@ def setup(nodes):
     
     # Open yarn-site.xml and replace RESOURCE_MANAGER_HOSTNAME with first token
     # of sys.argv
-    fh = open("mapred-site.xml")
+    fh = open("yarn-site.xml")
     fc = fh.read()
     fh.close()
     
     fc=fc.replace("RESOURCE_MANAGER_HOSTNAME",nodeList[0])
     
-    fh = open("mapred-site.xml","w")
+    fh = open("yarn-site.xml","w")
     fh.write(fc)
     fh.close()
     
@@ -31,7 +31,7 @@ def setup(nodes):
     fh.close()
     
     # Start Yarn
-    os.system("HADOOP_CONF_DIR="+os.getcwd()+ ";$HADOOP_PREFIX/bin/start-mapred.sh")  
+    os.system("HADOOP_CONF_DIR="+os.getcwd()+ ";$HADOOP_PREFIX/sbin/start-yarn.sh")  
     
 if __name__ == "__main__":
     setup(sys.argv[1])          

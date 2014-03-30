@@ -34,6 +34,11 @@ Hadoop
 .. autoclass:: pmr.Hadoop
    :members:
    
+Yarn
+-------   
+.. autoclass:: pmr.Yarn
+   :members:   
+   
 Spark
 -------   
 .. autoclass:: pmr.Spark

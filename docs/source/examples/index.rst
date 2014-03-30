@@ -9,4 +9,5 @@ Examples & Best Practice
 
    gettingstarted.rst
    hadoop.rst
+   yarn.rst
    spark.rst

@@ -24,7 +24,6 @@ def wordCountJob():
     
     job = pmr.MapReduce(pmrDesc, COORDINATION_URL)
     
-    
     # SAGA Job dictionary description of Chunk, Map, Reduce tasks.         
     chunkDesc = { "executable": "split -l 50" }
     

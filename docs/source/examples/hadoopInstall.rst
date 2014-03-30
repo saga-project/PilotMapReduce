@@ -6,16 +6,15 @@ Setup
 
 Install
 -------
-
-Download and untar Hadoop
+	
+Download and untar Hadoop1
 
 .. code-block:: python
 
 	cd $HOME
-	wget http://apache.mirrors.spacedump.net/hadoop/common/stable/hadoop-2.2.0.tar.gz
-	tar xvf hadoop-2.2.0.tar.gz --gzip
-	rm hadoop-2.2.0.tar.gz # We no longer need the tar
-	
+	wget http://www.interior-dsgn.com/apache/hadoop/common/stable1/hadoop-1.2.1.tar.gz
+	tar xvf hadoop-1.2.1.tar.gz --gzip
+	rm hadoop-1.2.1.tar.gz # We no longer need the tar
 
 Environment
 -----------
@@ -27,16 +26,14 @@ contents in the .hadoop.env file
 
 	export HADOOP_PREFIX=$HOME/hadoop-2.2.0
 	export HADOOP_HOME=$HADOOP_PREFIX
-	export HADOOP_COMMON_HOME=$HADOOP_PREFIX
-	export HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop
-	export HADOOP_HDFS_HOME=$HADOOP_PREFIX
-	export HADOOP_MAPRED_HOME=$HADOOP_PREFIX
-	export HADOOP_YARN_HOME=$HADOOP_PREFIX
+	export HADOOP_CONF_DIR=$HADOOP_PREFIX/conf
 	export PATH=$HADOOP_PREFIX/bin:$PATH
 		
-`source ~/.bashrc` file
+Comment `.yarn.env` statement if exists in ~/.bashrc and `source ~/.bashrc` file
+
 
 .. note:: Make sure, Java environment is already available.
+
 
 
 Configuration
@@ -56,18 +53,19 @@ a shared file system.
 	  </property>
 	</configuration>
 
-Edit $HADOOP_CONF_DIR/yarn-site.xml with below contents. The property `yarn.resourcemanager.hostname` is mandatory 
+Edit $HADOOP_CONF_DIR/mapred-site.xml with below contents. The property `mapred.job.tracker` is mandatory 
 and has variable `RESOURCE_MANAGER_HOSTNAME` as value, which is replaced later by one of the nodes acquired by Pilot. 
 
 .. code-block:: xml
 
 	<configuration>
 	  <property>
-	    <name>yarn.resourcemanager.hostname</name>
+	    <name>mapred.job.tracker</name>
 	    <value>RESOURCE_MANAGER_HOSTNAME</value>
 	    <description>The hostname of the RM.</description>
 	  </property>
-	</configuration>
-	
-.. note:: You can also add other configuration properties related to the yarn-site.xml and core-site.xml
+	</configuration>	
+		
+		
+.. note:: You can also add other configuration properties related to the mapred-site.xml and core-site.xml
 	

@@ -10,10 +10,10 @@ from pmr.util.logger import logger
 import os
 
 
-class Hadoop(MapReduce):
+class Yarn(MapReduce):
     
     """
-        Hadoop: Class for managing Hadoop Jobs
+        Hadoop: Class for managing Yarn Jobs
     
     """ 
       
@@ -24,21 +24,21 @@ class Hadoop(MapReduce):
             coordination system 
             
         """
-        logger.info("Initialize PMR-Hadoop")
+        logger.info("Initialize PMR-Yarn")
         MapReduce.__init__(self, pmrDesc, coordinationUrl)
-        self._setupScript = os.path.join(os.path.dirname(__file__), "../cluster/hadoop/setup.py") 
-        self._stopScript = os.path.join(os.path.dirname(__file__), "../cluster/hadoop/stop.py")
+        self._setupScript = os.path.join(os.path.dirname(__file__), "../cluster/yarn/setup.py") 
+        self._stopScript = os.path.join(os.path.dirname(__file__), "../cluster/yarn/stop.py")
         
              
     def setUpCluster(self):
         """ 
-            Setup Hadoop Cluster 
+            Setup Yarn Cluster 
         """
         
         self.startPilot()
         pcs = self.getPilotComputes()
         
-        logger.info("Setup Hadoop Cluster")
+        logger.info("Setup Yarn Cluster")
         i=0        
         hadoopSetupTasks =[]       
         for pilot in pcs:
@@ -48,7 +48,7 @@ class Hadoop(MapReduce):
             setUpTask = util.setAffinity(setUpTask, self._pilotInfo[i]['hadoopConfDir'].data_unit_description)
             setUpTask['output_data'] = [
                                          {
-                                          self._pilotInfo[i]['hadoopConfDir'].get_url(): ['mapred-site.xml','core-site.xml','slaves']
+                                          self._pilotInfo[i]['hadoopConfDir'].get_url(): ['yarn-site.xml','core-site.xml','slaves']
                                          }
                                        ]
             setUpTask['executable'] = "python"
@@ -63,9 +63,9 @@ class Hadoop(MapReduce):
     
     def submitJob(self,desc):
         
-        """ Submit Hadoop Job description """
+        """ Submit Yarn Job description """
         
-        logger.info("Submitting Hadoop Jobs")
+        logger.info("Submitting Yarn Jobs")
         hadoopTasks =[]
         i=0
         for pilot in self._pilots:
@@ -81,9 +81,9 @@ class Hadoop(MapReduce):
         
     
     def stopCluster(self):
-        """ Tear down Hadoop cluster """
+        """ Tear down Yarn cluster """
         
-        logger.info("Stopping Hadoop Cluster")
+        logger.info("Stopping Yarn Cluster")
         hadoopStopTasks =[]
         i=0
         for pilot in self._pilots:
