@@ -24,7 +24,7 @@ contents in the .hadoop.env file
 
 .. code-block:: python
 
-	export HADOOP_PREFIX=$HOME/hadoop-2.2.0
+	export HADOOP_PREFIX=$HOME/hadoop-1.2.1
 	export HADOOP_HOME=$HADOOP_PREFIX
 	export HADOOP_CONF_DIR=$HADOOP_PREFIX/conf
 	export PATH=$HADOOP_PREFIX/bin:$PATH
@@ -47,7 +47,7 @@ a shared file system.
 
 	<configuration>
 	  <property>
-	    <name>fs.defaultFS</name>
+	    <name>fs.default.name</name>
 	    <value>file://localhost/</value>
 	    <description>NameNode URI</description>
 	  </property>
@@ -61,7 +61,7 @@ and has variable `RESOURCE_MANAGER_HOSTNAME` as value, which is replaced later b
 	<configuration>
 	  <property>
 	    <name>mapred.job.tracker</name>
-	    <value>RESOURCE_MANAGER_HOSTNAME</value>
+	    <value>RESOURCE_MANAGER_HOSTNAME:9001</value>
 	    <description>The hostname of the RM.</description>
 	  </property>
 	</configuration>	
