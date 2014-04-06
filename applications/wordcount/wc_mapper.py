@@ -10,7 +10,7 @@ if __name__ == "__main__":
     with open(mapJob.chunkFile) as fh:
         line = fh.read()
         for word in line.split():
-            mapJob.emit(word, "%s,%s" % (word, 1))
+            mapJob.emit(word, 1)
                             
     # Finalize map job  
     mapJob.finalize()

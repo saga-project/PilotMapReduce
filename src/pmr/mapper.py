@@ -33,7 +33,7 @@ class Mapper:
     
     def emit(self, key, value):
         """ Emit the key value based on the partition function """ 
-        self.partitionList[self.partition(key)].append(value)
+        self.partitionList[self.partition(key)].append("%s,%s" % (key,value))
         
     def finalize(self):
         """ Prepare the map output files 

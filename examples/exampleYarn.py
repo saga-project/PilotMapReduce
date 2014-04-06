@@ -36,7 +36,10 @@ def wordCountJob():
     
     
     # Submit Yarn Job
-    job.submitJob(hadoopDesc)
+    yarnJobs = []
+    yarnJobs.append(job.submitJobtoYarn(hadoopDesc))
+    
+    job.wait(yarnJobs)
     
     # Tear down cluster    
     job.stopCluster()

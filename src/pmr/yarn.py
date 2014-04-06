@@ -28,6 +28,7 @@ class Yarn(MapReduce):
         MapReduce.__init__(self, pmrDesc, coordinationUrl)
         self._setupScript = os.path.join(os.path.dirname(__file__), "../cluster/yarn/setup.py") 
         self._stopScript = os.path.join(os.path.dirname(__file__), "../cluster/yarn/stop.py")
+        self._yarnPilots = [] 
         
              
     def setUpCluster(self):
@@ -57,28 +58,64 @@ class Yarn(MapReduce):
             
             hadoopSetupTasks.append(self.compute_data_service.submit_compute_unit(setUpTask))            
             i=i+1        
-        util.waitCUs(hadoopSetupTasks)
+        util.waitCUs(hadoopSetupTasks)        
         logger.info("Cluster ready")
-        
     
-    def submitJob(self,desc):
+    def launchPilotOnYarn(self, portNo=8032):
+        """ Launch Pilot on Yarn Cluster
+            @param portNo: Accepts port number on which Yarn cluster is running - default 8032
+        """
         
-        """ Submit Yarn Job description """
+        pcs = self.getPilotComputes()
+        
+        logger.info("Launching Pilots on Yarn Cluster")
+        i=0        
+              
+        for pilot in pcs:
+            headNode = pilot.get_nodes()[0]
+            yarnDesc = { 
+                         "service_url": "yarn://" + headNode + ":" + str(portNo),
+                         "number_of_processes": self._pilots[i]['pilot_compute']['number_of_processes'],
+                        }
+            self._yarnPilots.append(self.pilot_compute_service.create_pilot(yarnDesc))
+            i = i + 1
+        util.waitPilots(self._yarnPilots)
+    
+    def submitJobtoPilotOnYarn(self, desc):
+        """ 
+            Submits job to pilot running on Yarn Cluster
+            @param desc: SAGA Job description to be launched on Pilot running on Yarn cluster 
+        """
+        
+        return self.compute_data_service.submit_compute_unit(desc)
+    
+    def submitJobtoYarn(self,desc):
+        
+        """ Submit Yarn Job description 
+            @param desc: SAGA Job description to be launched on Yarn Cluster
+        """
         
         logger.info("Submitting Yarn Jobs")
-        hadoopTasks =[]
-        i=0
-        for pilot in self._pilots:
-            task = {} 
-            task.update(desc)                       
-            task = util.setAffinity(task, pilot['pilot_compute'])
-            task['executable'] = 'HADOOP_CONF_DIR=$PWD;' + task['executable']
-            task['input_data'] = [self._pilotInfo[i]['hadoopConfDir'].get_url()]            
-            hadoopTasks.append(self.compute_data_service.submit_compute_unit(task))            
-            i=i+1
-        util.waitCUs(hadoopTasks)            
-        return hadoopTasks    
+        task = {} 
+        task.update(desc)                       
+        task['executable'] = 'HADOOP_CONF_DIR=$PWD;' + task['executable']
+        task['input_data'] = [self._pilotInfo[i]['hadoopConfDir'].get_url()]  
+                  
+        return self.compute_data_service.submit_compute_unit(task)  
+
+    def wait(self, jobs):
+        """ 
+            Waits for the compute units to complete 
+            @param jobs: List of CUs
+        """
+        util.waitCUs(jobs)
         
+    def stopPilotOnYarn(self):
+        """ 
+            Stop Pilots running on Yarn cluster
+        """
+        map(lambda pilot: pilot.cancel(), self._yarnPilots)
+            
     
     def stopCluster(self):
         """ Tear down Yarn cluster """

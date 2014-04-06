@@ -354,7 +354,7 @@ class MapReduce(object):
         
         @param desc: SAGA Job description  
         """
-        self.compute_data_service.submit_compute_unit(desc)
+        return self.compute_data_service.submit_compute_unit(desc)
         
     
     def reduceOnly(self, mapDus):
