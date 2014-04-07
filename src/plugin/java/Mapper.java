@@ -1,9 +1,9 @@
-package PMR;
+package pmr;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
-class Mapper {
+public class Mapper {
 	/*
 	 * mapper: Class for managing Map phase of MapReduce Job
 	 */
@@ -21,13 +21,14 @@ class Mapper {
 		 */
 		
 		// the 1st argument is a comma separated list of chunk files.
-		this.chunkFile = args[1];
-		this.nbrReduces = Integer.parseInt(args[2]);
+		this.chunkFile = args[0];
+		this.nbrReduces = Integer.parseInt(args[1]);
 		this.partitionFile = new PrintWriter[nbrReduces];
 		this.partitionList = new ArrayList<ArrayList<String>>();
 
 		// user defined map task arguments
-		System.arraycopy(args, 3, this.mapArgs, 0, args.length - 3);
+		if (args.length > 2)
+			System.arraycopy(args, 3, this.mapArgs, 0, args.length - 3);
 	}
 
 	private int partition(String key) {
