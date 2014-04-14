@@ -18,7 +18,7 @@ public class Reducer {
 		 * as command line parameters.
 		 */
 		this.partitionFiles = new ArrayList<String>();
-		Collections.addAll(this.partitionFiles, args[1].split(":"));
+		Collections.addAll(this.partitionFiles, args[0].split(":"));
 		String[] tokens = this.partitionFiles.get(0).split("-");
 		this.reduce = Integer.parseInt(tokens[tokens.length - 1]);
 

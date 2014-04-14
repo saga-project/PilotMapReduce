@@ -1,4 +1,5 @@
 package pmr;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,16 +20,20 @@ public class Mapper {
 		 * Initializes Map task with parameters passed by MapReduce framework as
 		 * command line parameters.
 		 */
-		
+
 		// the 1st argument is a comma separated list of chunk files.
 		this.chunkFile = args[0];
 		this.nbrReduces = Integer.parseInt(args[1]);
 		this.partitionFile = new PrintWriter[nbrReduces];
 		this.partitionList = new ArrayList<ArrayList<String>>();
 
+		for (int i = 0; i < nbrReduces; i++)
+			this.partitionList.add(new ArrayList<String>());
+
 		// user defined map task arguments
-		if (args.length > 2)
+		if (args.length > 2) {
 			System.arraycopy(args, 3, this.mapArgs, 0, args.length - 3);
+		}
 	}
 
 	private int partition(String key) {
@@ -42,7 +47,7 @@ public class Mapper {
 		 * written to
 		 */
 
-		return (int) (key.hashCode() % nbrReduces);
+		return (int) (Math.abs(key.hashCode() % nbrReduces));
 	}
 
 	public void emit(Object key, Object value) {
