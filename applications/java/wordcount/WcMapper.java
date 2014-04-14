@@ -1,5 +1,3 @@
-package pmr;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 

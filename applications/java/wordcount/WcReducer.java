@@ -1,4 +1,3 @@
-package pmr;
 import java.io.*;
 import java.util.*;
 import pmr.Reducer;
