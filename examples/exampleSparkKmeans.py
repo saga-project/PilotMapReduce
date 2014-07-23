@@ -5,6 +5,13 @@ from pmr import util
 
 COORDINATION_URL = "redis://localhost:6379"
 
+ITERATIONS = 10
+inputFiles = ["/Users/pmantha/out"]
+clusters = [5]
+nbrMappers = 4
+
+
+
 def wordCountJob():
     
     # List of Pilot-MapReduce descriptions    
@@ -23,26 +30,28 @@ def wordCountJob():
                                      },                    
                   })
     
-    # Create Yarn Job
-    job = pmr.Yarn(pmrDesc, COORDINATION_URL)
-    
-    # setup Yarn cluster
-    job.setUpCluster()
-    
-    # SAGA Job dictionary description of Yarn Job.             
-    hadoopDesc = {  "executable": "hadoop jar $HADOOP_PREFIX/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.2.0.jar wordcount",
-                    "arguments": ['$HOME/data', '$HOME/Output']                    
-                 }
-    
-    
-    # Submit Yarn Job
-    yarnJobs = []
-    yarnJobs.append(job.submitJob(hadoopDesc))
-    
-    job.wait(yarnJobs)
-    
-    # Tear down cluster    
-    job.stopCluster()
+    try:
+        
+        # Create Spark Job
+        job = pmr.Spark(pmrDesc, COORDINATION_URL)
+        
+        # setup Spark cluster
+        job.setUpCluster()
+        
+        sparkContext = "spark://" + job.getSparkMaster() + ":7077" 
+        
+        for dataFile in inputFiles:
+            for nbrCluster in clusters:
+                # SAGA Job dictionary description of Spark Kmeans example.
+                sparkDesc = {  "executable": "pyspark " + os.getcwd() + "/kmeansIter.py" ,
+                                "arguments": [sparkContext, dataFile, nbrCluster, nbrMappers, ITERATIONS]                    
+                             }            
+                # Submit Spark Job
+                job.submitJob(sparkDesc)
+            
+    finally:           
+        # Tear down cluster    
+        job.stopCluster()
     
     
 if __name__ == "__main__":

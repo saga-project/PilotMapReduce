@@ -81,7 +81,7 @@ class Yarn(MapReduce):
             i = i + 1
         util.waitPilots(self._yarnPilots)
     
-    def submitJobtoPilotOnYarn(self, desc):
+    def submitJobToPilotOnYarn(self, desc):
         """ 
             Submits job to pilot running on Yarn Cluster
             @param desc: SAGA Job description to be launched on Pilot running on Yarn cluster 
@@ -89,7 +89,7 @@ class Yarn(MapReduce):
         
         return self.compute_data_service.submit_compute_unit(desc)
     
-    def submitJobtoYarn(self,desc):
+    def submitJob(self,desc):
         
         """ Submit Yarn Job description 
             @param desc: SAGA Job description to be launched on Yarn Cluster
