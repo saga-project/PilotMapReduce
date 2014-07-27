@@ -123,7 +123,7 @@ setup_args = {
                     'cluster.spark.setup','cluster.spark.stop'],
     'package_data'     : {'': ['*.sh', 'VERSION', ]},
     'install_requires' : ['setuptools',
-                          'bigjob',
+                          'bigjob2',
                           'radical.utils'],
     #'tests_require'    : ['setuptools', 'nose'],
     #'test_suite'       : 'sagapilot.tests',
