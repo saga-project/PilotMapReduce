@@ -262,7 +262,7 @@ class MapReduce(object):
                     mapTask['output_data'] = []
                     for i in range(self._nbrReduces):
                         mapTask['output_data'].append({ self.reduceDus[i].get_url(): [constant.MAP_PARTITION_FILE_REGEX + str(i)] })
-                    mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ] 
+                    mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ] + self._mapDesc["input_data"]
                     if self._mapExe is not None:
                         mapTask["input_data"].append(self._mapExe.get_url())
                     mapCUs.append(self.compute_data_service.submit_compute_unit(mapTask))
@@ -289,7 +289,7 @@ class MapReduce(object):
                 reduceTask = util.setAffinity(self._reduceDesc, rdu.data_unit_description)
                 reduceTask['arguments'] = [":".join(rdu.list_files())] + self._reduceDesc.get('arguments', [])
                 reduceTask['input_data'] = [rdu.get_url()]
-                reduceTask['output_data'] = [{self._outputDu.get_url(): ['reduce-*'] }]
+                reduceTask['output_data'] = [{self._outputDu.get_url(): ['reduce-*'] }] 
                 if self._mapExe is not None:
                     reduceTask["input_data"].append(self._reduceExe.get_url())
                 reduceCUs.append(self.compute_data_service.submit_compute_unit(reduceTask))
@@ -390,3 +390,50 @@ class MapReduce(object):
         self._reduce()
         self._collectOutput()
         self.stopPilot()
+        
+    def runKmeansIterativeJob(self, seed, nbrIterations=1):
+        """ Executes MapReduce iterative """
+        
+        self.startPilot()
+        self._loadDataIntoPD()
+        self._chunk()
+        iteration = 1
+                
+        while iteration <= nbrIterations:            
+            self._iterDU = self.compute_data_service.submit_data_unit(seed)
+            util.waitDUs(self._iterDU)
+            
+            self._mapDesc["input_data"] = [self._iterDU.get_url()] 
+            self._map()
+            self._reduce()
+            self._collectOutput()
+            
+            # merge reduce outputs in self._outputPath
+            newCenterFile = self._outputPath+'/centers.txt-'+str(iteration)
+            with open(newCenterFile, 'w') as mergeFile:
+                for centerOut in glob.glob( '%s/%s*' % (self._outputPath, )):
+                    logger.info("processing file %s " % centerOut)
+                    centerRead = open(os.path.join(self._outputPath,centerOut),'r')
+                    for line in centerRead:
+                        mergeFile.write(line)
+                    centerRead.close()    
+
+            seed["file_urls"] =  newCenterFile                   
+            iteration = iteration + 1                            
+            
+            
+               
+
+            
+            
+            
+            
+            
+            
+
+        
+        
+        
+        
+        
+        

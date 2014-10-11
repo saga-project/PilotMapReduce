@@ -40,14 +40,15 @@ def closestPoint(p, centers):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print >> sys.stderr, "Usage: kmeans <master> <file> <k> <nbrMappers> <iterations>"
         exit(-1)
+    print sys.argv
     sc = SparkContext(sys.argv[1], "PythonKMeans")
     lines = sc.textFile(sys.argv[2], int(sys.argv[4]))
     data = lines.map(parseVector).cache()
     K = int(sys.argv[3])
-    iterations = int(sys.argv[4])
+    iterations = int(sys.argv[5])
 
     # TODO: change this after we port takeSample()
     #kPoints = data.takeSample(False, K, 34)
