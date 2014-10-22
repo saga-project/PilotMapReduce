@@ -51,6 +51,9 @@ class MapReduce(object):
         self._nbrReduces = 1        
         self._outputDu = None
 
+        self._iterDu =  None
+        self._iterOutputPrefixes = None
+
         self._pilotInfo = [{}] * len(self._pilots)
         
         
@@ -123,7 +126,7 @@ class MapReduce(object):
             @param  reduceDesc: SAGA Job Description of Reduce task
                          
         """          
-        self._outputPath = path
+        self.outputPath = path
         
         
     def _clean(self, ex, msg):
@@ -262,7 +265,11 @@ class MapReduce(object):
                     mapTask['output_data'] = []
                     for i in range(self._nbrReduces):
                         mapTask['output_data'].append({ self.reduceDus[i].get_url(): [constant.MAP_PARTITION_FILE_REGEX + str(i)] })
-                    mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ] 
+                    mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ]                    
+                    if self._iterDu:
+                        mapTask["input_data"].append(self._iterDu.get_url())
+                        for dui in self._iterDu.to_dict()["data_unit_items"]:
+                            mapTask["arguments"].append(dui.__dict__["filename"])
                     if self._mapExe is not None:
                         mapTask["input_data"].append(self._mapExe.get_url())
                     mapCUs.append(self.compute_data_service.submit_compute_unit(mapTask))
@@ -289,9 +296,15 @@ class MapReduce(object):
                 reduceTask = util.setAffinity(self._reduceDesc, rdu.data_unit_description)
                 reduceTask['arguments'] = [":".join(rdu.list_files())] + self._reduceDesc.get('arguments', [])
                 reduceTask['input_data'] = [rdu.get_url()]
-                reduceTask['output_data'] = [{self._outputDu.get_url(): ['reduce-*'] }]
-                if self._mapExe is not None:
-                    reduceTask["input_data"].append(self._reduceExe.get_url())
+                if self._iterOutputPrefixes:
+                    reduceTask['output_data'] = [{self._outputDu.get_url():[]}]
+                    for pref in self._iterOutputPrefixes:
+                        reduceTask['output_data'][0][self._outputDu.get_url()].append(pref+"*")
+                else:
+                    reduceTask['output_data'] = [{self._outputDu.get_url():['reduce-*']}]
+                    
+                if self._reduceExe is not None:
+                    reduceTask["input_data"].append(self._reduceExe.get_url())                    
                 reduceCUs.append(self.compute_data_service.submit_compute_unit(reduceTask))
                
             # Wait for the map DUS and CUS 
@@ -303,7 +316,7 @@ class MapReduce(object):
     def _collectOutput(self):
         """ Export Output DU to the user defined output path """
         
-        self._outputDu.export(self._outputPath)
+        self._outputDu.export(self.outputPath)
 
         
 
@@ -356,6 +369,16 @@ class MapReduce(object):
         """
         self.compute_data_service.submit_compute_unit(desc)
         
+    def submitDataUnit(self, desc):
+        """ 
+        Submits SAGA Job description to Pilot
+        
+        @param desc: SAGA Job description  
+        """
+        tdu = self.compute_data_service.submit_data_unit(desc)
+        tdu.wait()
+        return tdu
+
     
     def reduceOnly(self, mapDus):
         """ 
@@ -373,13 +396,27 @@ class MapReduce(object):
         else:
             self.clean("Map DUS are invalid")
             
-    def mapReduceOnly(self):
+    def mapReduce(self):
         self._loadDataIntoPD()
         self._chunk()
         self._map()
         self._reduce()
         self._collectOutput()                     
+
+    def mapReduce(self):
+        self._map()
+        self._reduce()
+        self._collectOutput() 
         
+    def initialize(self):
+        self._loadDataIntoPD()
+        self._chunk()
+        
+    def setIterativeDataUnit(self, du):
+        self._iterDu = du    
+    
+    def setIterativeOutputPrefix(self, filePrefixes):
+        self._iterOutputPrefixes = filePrefixes    
     
     def runJob(self):
         """ Executes the entire MapReduce workflow """
