@@ -1,4 +1,5 @@
 import os
+import glob
 
 class Reducer:
     """
@@ -11,13 +12,12 @@ class Reducer:
             as command line parameters.
             
         """
-        self.partitionFiles=args[1]
-        self.partitionFiles=self.partitionFiles.split(":")        
+        self.partitionFiles=glob.glob("*-sorted-map-partition-*")            
         self.reduce=str(self.partitionFiles[0].split("-")[-1])
         reduceFile="reduce-"+str(self.reduce)
-        self.outputDir = args[2]
-        self.reduceOutFiles = args[3].split(",")
-        self.reduceArgs = args[4:]
+        self.outputDir = args[1]
+        self.reduceOutFiles = args[2].split(",")
+        self.reduceArgs = args[3:]
         self.reduceWrite=open(reduceFile, 'w')   
     
     def emit(self, key, value):

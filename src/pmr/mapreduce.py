@@ -299,20 +299,20 @@ class MapReduce(object):
         util.waitDUs([self._outputDu])
 
         # Create reduce for each reduce DU 
-        reduceCUs = []        
+        reduceCUs = [] 
+        pdString = "%s:%s" % (self.pdUrl.netloc,self.pdUrl.path)
+        outputDir = os.path.join(pdString,self._outputDu.get_url().split(":")[-1]) 
+        reduceArgs = self._reduceDesc.get('arguments', [])           
+       
         try:
             for rdu in self.reduceDus:
                 mapOutPath=os.path.join(self.pdUrl.path,rdu.get_url().split(":")[-1])
                 rduFiles = [os.path.join(mapOutPath,f) for f in os.listdir(mapOutPath)]                
                 rdu.add_files(rduFiles)
                 rdu.wait()                
-                reduceTask = util.setAffinity(self._reduceDesc, rdu.data_unit_description)
+                reduceTask = util.setAffinity(copy.copy(self._reduceDesc), rdu.data_unit_description)
                 reduceTask['input_data'] = [rdu.get_url()]
-                
-
-                pdString = "%s:%s" % (self.pdUrl.netloc,self.pdUrl.path)
-                outputDir = os.path.join(pdString,self._outputDu.get_url().split(":")[-1])            
-                
+                                
                 if self._iterOutputPrefixes:
                     reduceFiles = []
                     for pref in self._iterOutputPrefixes:
@@ -320,7 +320,7 @@ class MapReduce(object):
                 else:
                     reduceFiles.append('reduce-*')
 
-                reduceTask['arguments'] = [":".join(rdu.list_files()), outputDir, ",".join(reduceFiles)] + self._reduceDesc.get('arguments', [])
+                reduceTask['arguments'] = [outputDir, ",".join(reduceFiles)] + reduceArgs
 
                     
                 if self._reduceExe is not None:
