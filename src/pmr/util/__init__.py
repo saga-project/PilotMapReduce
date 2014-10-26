@@ -13,7 +13,7 @@ class constant(object):
     JOB_COMPLETION_STATUS = ['Done','Failed']
     DU_OR_PILOT_COMPLETION_STATUS = ['Running','Failed']
     CHUNK_FILE_PREFIX='`hostname`-chunk-'
-    MAP_PARTITION_FILE_REGEX = '*-sorted-map-partition-*'
+    MAP_PARTITION_FILE_REGEX = '*-sorted-map-partition-'
     
 
 

@@ -7,6 +7,7 @@ import numpy as np
 import itertools
 import datetime
 import glob
+import shutil
 
 
 CENTER_FILE_PREFIX = "Centers-"
@@ -54,12 +55,12 @@ def kmeans():
                                        "affinity_datacenter_label": "eu-de-south",
                                        "affinity_machine_label": "mymachine-1"                                
                                      },
-                    'pilot_data'   : { "service_url": "ssh://localhost/" + os.getenv("HOME") + "/pilot-data",
+                    'pilot_data'   : { "service_url": "ssh://localhost" + os.getenv("HOME") + "/pilot-data",
                                        "size": 100,
                                        "affinity_datacenter_label": "eu-de-south",
                                        "affinity_machine_label": "mymachine-1"                              
                                      },
-                    'input_url'    : 'sftp://localhost/' + os.path.join(os.getcwd(), "../resources/data/kmeans")
+                    'input_url'    : 'sftp://localhost' + os.path.join(os.getcwd(), "../resources/data/kmeans")
                   })
         
     # SAGA Job dictionary description of Chunk, Map, Reduce tasks.         
@@ -73,13 +74,13 @@ def kmeans():
     mapDesc   = { "executable": "python kmeans_mapper.py",
                   "number_of_processes": 1,
                   "spmd_variation":"single",
-                  "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/kmeans/kmeans_mapper.py")]
+                  "files" : ['ssh://localhost' + os.path.join(os.getcwd(), "../applications/kmeans/kmeans_mapper.py")]
                 }
     
     reduceDesc = { "executable": "python kmeans_reducer.py",           
                     "number_of_processes": 1,
                     "spmd_variation":"single",
-                    "files" : ['ssh://localhost/' + os.path.join(os.getcwd(), "../applications/kmeans/kmeans_reducer.py")]
+                    "files" : ['ssh://localhost' + os.path.join(os.getcwd(), "../applications/kmeans/kmeans_reducer.py")]
                  }
     
 
@@ -93,16 +94,17 @@ def kmeans():
 
     # Set number of reduces and output path.    
     job.setNbrReduces(8)
-    job.setOutputPath(os.getenv("HOME") + "/output")
-        
+    outputPath=os.getenv("HOME") + "/output"  
+    shutil.rmtree(outputPath, ignore_errors=True)     
+  
+    job.setOutputPath(outputPath)        
     job.startPilot()
     job.initialize()
-    job.setIterativeOutputPrefix([CENTER_FILE_PREFIX])    
+    job.setIterativeOutputPrefix([CENTER_FILE_PREFIX])
+        
     for iteration in range(0,NUM_ITERATIONS):          
         job.setIterativeDataUnit(job.submitDataUnit(iterativeInput))
-
-        job.mapReduce()
-        
+        job.mapReduce()        
         # Merge centers
         newCenterFile = os.path.join(job.outputPath, 'centers.txt')
         with open(newCenterFile, 'w') as mergeFile:

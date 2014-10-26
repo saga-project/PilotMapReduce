@@ -11,7 +11,7 @@ class Reducer:
         """
         self.partitionFiles=args[1]
         self.partitionFiles=self.partitionFiles.split(":")        
-        self.reduce=str(self.partitionFiles[0].split("-")[-1:][0])
+        self.reduce=str(self.partitionFiles[0].split("-")[-1])
         reduceFile="reduce-"+str(self.reduce) 
         self.reduceWrite=open(reduceFile, 'w')   
     

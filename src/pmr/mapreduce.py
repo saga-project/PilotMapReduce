@@ -5,10 +5,12 @@ __copyright__ = "Copyright 2011, Pradeep Mantha"
 __license__ = "MIT"
 
 
-from pilot import PilotComputeService, ComputeDataService, PilotDataService
+from pilot import PilotComputeService, ComputeDataService, PilotDataService, DataUnit
 from pmr import util
 from pmr.util import constant
 from pmr.util.logger import logger
+from urlparse import urlparse
+import copy, os, shutil
 
 
 class MapReduce(object):
@@ -26,7 +28,7 @@ class MapReduce(object):
             
         """
             
-        logger.info("Initialize Pilot-MapReduce")
+        logger.debug("Initialize Pilot-MapReduce")
         
         # Class variables.
         self._pilots = pmrDesc
@@ -47,7 +49,7 @@ class MapReduce(object):
         self.reduceDus = []
         self._reduceDesc = None
         self._reduceExe = None
-
+        
         self._nbrReduces = 1        
         self._outputDu = None
 
@@ -55,6 +57,10 @@ class MapReduce(object):
         self._iterOutputPrefixes = None
 
         self._pilotInfo = [{}] * len(self._pilots)
+        
+        self.pdUrl = urlparse(self._pilots[0]['pilot_data']["service_url"])
+                    
+        
         
         
         self.compute_data_service = None
@@ -64,7 +70,7 @@ class MapReduce(object):
     def startPilot(self):
         """ Start the pilot compute and data services """
         
-        logger.info("Start pilot service")
+        logger.debug("Start pilot service")
         try:
             self.compute_data_service = ComputeDataService()    
             self.pilot_compute_service = PilotComputeService(self._coordinationUrl)
@@ -77,7 +83,7 @@ class MapReduce(object):
         
     def stopPilot(self):
         """ Stops the pilot compute and data services """
-        logger.info("Terminate pilot Service")
+        logger.debug("Terminate pilot Service")
         try:
             self.compute_data_service.cancel()    
             self.pilot_compute_service.cancel()
@@ -159,7 +165,7 @@ class MapReduce(object):
     def _loadDataIntoPD(self):
         """ Loads input data and executables into Pilot-Data """
 
-        logger.info("Loading input data into Pilot-Data")
+        logger.debug("Loading input data into Pilot-Data")
         try:
             self._loadInputData()
             self._loadExecutables()
@@ -183,9 +189,9 @@ class MapReduce(object):
                 self._inputDus.append(temp)
         util.waitDUs(self._inputDus)
         
-        logger.info("New Pilot-MapReduce descriptions with updated PD URLS \n"  \
+        logger.debug("New Pilot-MapReduce descriptions with updated PD URLS \n"  \
                     "use these descriptions to reuse already uploaded data")
-        map(lambda x: logger.info(x), self._pilots)
+        map(lambda x: logger.debug(x), self._pilots)
         
     def _loadExecutables(self):
         """ Loads  executables into Pilot-Data """
@@ -213,12 +219,13 @@ class MapReduce(object):
         
         if self._chunkDesc:               
             """ for each file in inputDU create a Chunk task """
-            logger.info("Chunking input data")
+            logger.debug("Chunking input data")
             chunkCUs = []
             try:
                 for inputDu in self._inputDus:
                     temp = util.getEmptyDU(inputDu.data_unit_description)
                     temp = self.compute_data_service.submit_data_unit(temp)
+                    temp.wait()
                     for fName in inputDu.list_files():
                         # for user defined ChunkDesc assign affinity.
                         self._chunkDesc = util.setAffinity(self._chunkDesc, inputDu.data_unit_description)
@@ -241,7 +248,7 @@ class MapReduce(object):
             except Exception, ex:
                 self._clean(ex, "Chunk failed - Abort")
         else:
-            logger.info("Ignoring chunking of input data, as Chunk Description is not set for the MapReduce Job")
+            logger.debug("Ignoring chunking of input data, as Chunk Description is not set for the MapReduce Job")
             
 
     def _map(self):
@@ -253,6 +260,11 @@ class MapReduce(object):
             temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
             self.reduceDus.append(self.compute_data_service.submit_data_unit(temp))        
         util.waitDUs(self.reduceDus)
+        
+        pdString = "%s:%s" % (self.pdUrl.netloc,self.pdUrl.path)
+        rduDirs = [os.path.join(pdString,rdu.get_url().split(":")[-1]) for rdu in self.reduceDus]
+        rduString = ",".join(rduDirs)                        
+        
 
         # Create task for each chunk in all the chunk data units
         
@@ -260,22 +272,19 @@ class MapReduce(object):
         try:
             for cdu in self._chunkDus:
                 for cfName in cdu.list_files():
-                    mapTask = util.setAffinity(self._mapDesc, cdu.data_unit_description)
-                    mapTask['arguments'] = [cfName, self._nbrReduces] + self._mapDesc.get('arguments', [])
-                    mapTask['output_data'] = []
-                    for i in range(self._nbrReduces):
-                        mapTask['output_data'].append({ self.reduceDus[i].get_url(): [constant.MAP_PARTITION_FILE_REGEX + str(i)] })
+                    mapTask = util.setAffinity(copy.copy(self._mapDesc), cdu.data_unit_description)
+                    mapTask['arguments'] = [cfName, rduString] + self._mapDesc.get('arguments', [])
                     mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ]                    
                     if self._iterDu:
                         mapTask["input_data"].append(self._iterDu.get_url())
                         for dui in self._iterDu.to_dict()["data_unit_items"]:
                             mapTask["arguments"].append(dui.__dict__["filename"])
                     if self._mapExe is not None:
-                        mapTask["input_data"].append(self._mapExe.get_url())
+                        mapTask["input_data"].append(self._mapExe.get_url())                        
                     mapCUs.append(self.compute_data_service.submit_compute_unit(mapTask))
         
             # Wait for the map DUS and CUS   
-            logger.info("Create & submitting Map tasks")             
+            logger.debug("Create & submitting Map tasks")             
             util.waitCUs(mapCUs)
         except Exception, ex:
             self._clean(ex, "Map Phase failed - Abort")                    
@@ -293,6 +302,10 @@ class MapReduce(object):
         reduceCUs = []        
         try:
             for rdu in self.reduceDus:
+                mapOutPath=os.path.join(self.pdUrl.path,rdu.get_url().split(":")[-1])
+                rduFiles = [os.path.join(mapOutPath,f) for f in os.listdir(mapOutPath)]                
+                rdu.add_files(rduFiles)
+                rdu.wait()                
                 reduceTask = util.setAffinity(self._reduceDesc, rdu.data_unit_description)
                 reduceTask['arguments'] = [":".join(rdu.list_files())] + self._reduceDesc.get('arguments', [])
                 reduceTask['input_data'] = [rdu.get_url()]
@@ -308,7 +321,7 @@ class MapReduce(object):
                 reduceCUs.append(self.compute_data_service.submit_compute_unit(reduceTask))
                
             # Wait for the map DUS and CUS 
-            logger.info("Create & submitting Reduce tasks")                
+            logger.debug("Create & submitting Reduce tasks")                
             util.waitCUs(reduceCUs)
         except Exception, ex:
             self._clean(ex, "Reduce Phase failed - Abort")                  
@@ -413,7 +426,14 @@ class MapReduce(object):
         self._chunk()
         
     def setIterativeDataUnit(self, du):
-        self._iterDu = du    
+        self._iterDu = du
+        self.initializeIter()
+        
+    def initializeIter(self):   
+        self._mapDus = []
+        self.reduceDus = []
+        self._outputDu = None              
+        shutil.rmtree(self.outputPath, ignore_errors=True)    
     
     def setIterativeOutputPrefix(self, filePrefixes):
         self._iterOutputPrefixes = filePrefixes    

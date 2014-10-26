@@ -33,14 +33,14 @@ if __name__ == "__main__":
     pVectors = map(parseVector, open(mapJob.chunkFile))
     cVectors = map(parseVector, open(mapJob.mapArgs[0]))
     #cVectors = sorted(cVectors)    
-    logger.info("Total number of datapoints/chunk is %s " % len(pVectors))
+    print("Total number of datapoints/chunk is %s " % len(pVectors))
     tst=time.time()
     for point in pVectors:
         st=time.time()
         bestIndex = closestPoint(point, cVectors)                
         mapJob.emit(bestIndex, "%s,%s" % (bestIndex,",".join([str(x) for x in point])))        
-        logger.info("Time taken - %s" % round(time.time()-st,2))
-    logger.info("Total Time taken - %s" % round(time.time()-tst,2))
+        print("Time taken - %s" % round(time.time()-st,2))
+    print("Total Time taken - %s" % round(time.time()-tst,2))
     
     ## Finalize map job  
     mapJob.finalize()

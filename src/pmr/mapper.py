@@ -1,3 +1,5 @@
+import os
+
 class Mapper:
     """
         mapper: Class for managing Map phase of MapReduce Job
@@ -11,7 +13,8 @@ class Mapper:
         """
         # the 1st argument is a  comma separated list of chunk files.                
         self.chunkFile = args[1]
-        self.nbrReduces = int(args[2])
+        self.reduceDirs = args[2].split(",")       
+        self.nbrReduces = len(self.reduceDirs)
         
         # Used to store the keys and values 
         self.partitionFile = []
@@ -53,3 +56,18 @@ class Mapper:
         # close all partition files
         for i in range(0, self.nbrReduces): 
             self.partitionFile[i].close()
+
+        for i in range(0, self.nbrReduces): 
+            self.partitionFile[i].close()
+        
+        for i in range(0, self.nbrReduces):    
+            partitionName = "partition-" + str(i)        
+            scp_cmd = "scp -r %s %s" %(self.chunkFile + "-sorted-map-" + partitionName, self.reduceDirs[i])
+            print "Moving output file via cmd : %s" % scp_cmd
+            ret=os.system(scp_cmd)
+            if ret == 0:
+                print "File successfully transferred"
+            else:
+                print "File transfer failed"
+             
+            
