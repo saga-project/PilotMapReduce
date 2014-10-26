@@ -1,3 +1,5 @@
+import os
+
 class Reducer:
     """
         reducer: Class for managing Reduce phase of MapReduce Job
@@ -12,7 +14,10 @@ class Reducer:
         self.partitionFiles=args[1]
         self.partitionFiles=self.partitionFiles.split(":")        
         self.reduce=str(self.partitionFiles[0].split("-")[-1])
-        reduceFile="reduce-"+str(self.reduce) 
+        reduceFile="reduce-"+str(self.reduce)
+        self.outputDir = args[2]
+        self.reduceOutFiles = args[3].split(",")
+        self.reduceArgs = args[4:]
         self.reduceWrite=open(reduceFile, 'w')   
     
     def emit(self, key, value):
@@ -25,4 +30,15 @@ class Reducer:
         
     def finalize(self):  
         """ Close the reduce file """
-        self.reduceWrite.close()    
+        self.reduceWrite.close() 
+           
+        for fname in self.reduceOutFiles:    
+            scp_cmd = "scp -r %s %s" %(fname, self.outputDir)
+            print "Moving output file via cmd : %s" % scp_cmd
+            ret=os.system(scp_cmd)
+            if ret == 0:
+                print "File successfully transferred"
+                os.remove(fname)
+            else:
+                print "File transfer failed"        
+        

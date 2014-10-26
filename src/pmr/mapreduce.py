@@ -307,14 +307,21 @@ class MapReduce(object):
                 rdu.add_files(rduFiles)
                 rdu.wait()                
                 reduceTask = util.setAffinity(self._reduceDesc, rdu.data_unit_description)
-                reduceTask['arguments'] = [":".join(rdu.list_files())] + self._reduceDesc.get('arguments', [])
                 reduceTask['input_data'] = [rdu.get_url()]
+                
+
+                pdString = "%s:%s" % (self.pdUrl.netloc,self.pdUrl.path)
+                outputDir = os.path.join(pdString,self._outputDu.get_url().split(":")[-1])            
+                
                 if self._iterOutputPrefixes:
-                    reduceTask['output_data'] = [{self._outputDu.get_url():[]}]
+                    reduceFiles = []
                     for pref in self._iterOutputPrefixes:
-                        reduceTask['output_data'][0][self._outputDu.get_url()].append(pref+"*")
+                        reduceFiles.append(pref+"*")
                 else:
-                    reduceTask['output_data'] = [{self._outputDu.get_url():['reduce-*']}]
+                    reduceFiles.append('reduce-*')
+
+                reduceTask['arguments'] = [":".join(rdu.list_files()), outputDir, ",".join(reduceFiles)] + self._reduceDesc.get('arguments', [])
+
                     
                 if self._reduceExe is not None:
                     reduceTask["input_data"].append(self._reduceExe.get_url())                    
@@ -328,7 +335,10 @@ class MapReduce(object):
 
     def _collectOutput(self):
         """ Export Output DU to the user defined output path """
-        
+
+        reduceOutPath=os.path.join(self.pdUrl.path,self._outputDu.get_url().split(":")[-1])
+        outFiles = [os.path.join(reduceOutPath,f) for f in os.listdir(reduceOutPath)]                
+        self._outputDu.add_files(outFiles)        
         self._outputDu.export(self.outputPath)
 
         
