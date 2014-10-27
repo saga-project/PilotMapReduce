@@ -308,7 +308,7 @@ class MapReduce(object):
         for rdu in self.reduceDus:
             mapOutPath=os.path.join(self.pdUrl.path,rdu.get_url().split(":")[-1])
             rduFiles = [os.path.join(mapOutPath,f) for f in os.listdir(mapOutPath)]                
-            rdu.add_files(rduFiles)
+            rdu.add_files(rduFiles, exists=True)
             rtemp.append(rdu)
         util.waitDUs(rtemp)
         
@@ -318,9 +318,9 @@ class MapReduce(object):
             for rdu in self.reduceDus:                
                 reduceTask = util.setAffinity(copy.copy(self._reduceDesc), rdu.data_unit_description)
                 reduceTask['input_data'] = [rdu.get_url()]
+                reduceFiles = []                
                                 
-                if self._iterOutputPrefixes:
-                    reduceFiles = []
+                if self._iterOutputPrefixes:                    
                     for pref in self._iterOutputPrefixes:
                         reduceFiles.append(pref+"*")
                 else:
@@ -344,7 +344,7 @@ class MapReduce(object):
 
         reduceOutPath=os.path.join(self.pdUrl.path,self._outputDu.get_url().split(":")[-1])
         outFiles = [os.path.join(reduceOutPath,f) for f in os.listdir(reduceOutPath)]                
-        self._outputDu.add_files(outFiles)        
+        self._outputDu.add_files(outFiles, exists=True)        
         self._outputDu.export(self.outputPath)
 
         
