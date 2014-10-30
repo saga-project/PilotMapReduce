@@ -67,7 +67,10 @@ class Mapper:
             ret=os.system(scp_cmd)
             if ret == 0:
                 print "File successfully transferred"
-                os.remove(fname)
+                try:
+                    os.remove(fname)
+                except:
+                    pass
             else:
                 print "File transfer failed"
             
