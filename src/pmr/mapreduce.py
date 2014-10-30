@@ -256,9 +256,8 @@ class MapReduce(object):
         
         # Create output DUS one for each reduce to collect all the Map Task results 
         logger.debug("Creating DUS to store Map Output results")
-        for _ in range(self._nbrReduces):
-            temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
-            self.reduceDus.append(self.compute_data_service.submit_data_unit(temp))        
+        temp = util.getEmptyDU(self._pilots[0]['pilot_compute'])
+        self.reduceDus.append(self.compute_data_service.submit_data_unit(temp))        
         util.waitDUs(self.reduceDus)
         
         pdString = "%s:%s" % (self.pdUrl.netloc,self.pdUrl.path)
@@ -273,7 +272,7 @@ class MapReduce(object):
             for cdu in self._chunkDus:
                 for cfName in cdu.list_files():
                     mapTask = util.setAffinity(copy.copy(self._mapDesc), cdu.data_unit_description)
-                    mapTask['arguments'] = [cfName, rduString] + self._mapDesc.get('arguments', [])
+                    mapTask['arguments'] = [cfName, rduString, self._nbrReduces] + self._mapDesc.get('arguments', [])
                     mapTask["input_data"] = [ {cdu.get_url(): [cfName]} ]                    
                     if self._iterDu:
                         mapTask["input_data"].append(self._iterDu.get_url())
@@ -313,11 +312,11 @@ class MapReduce(object):
         util.waitDUs(rtemp)
         
                         
-       
+        rdu = self.reduceDus[0]       
         try:
-            for rdu in self.reduceDus:                
+            for reduce in range(self._nbrReduces):                
                 reduceTask = util.setAffinity(copy.copy(self._reduceDesc), rdu.data_unit_description)
-                reduceTask['input_data'] = [rdu.get_url()]
+                reduceTask['input_data'] = [{ rdu.get_url(): ['*-'+str(reduce)] }]
                 reduceFiles = []                
                                 
                 if self._iterOutputPrefixes:                    

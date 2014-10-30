@@ -13,15 +13,15 @@ class Mapper:
         """
         # the 1st argument is a  comma separated list of chunk files.                
         self.chunkFile = args[1]
-        self.reduceDirs = args[2].split(",")       
-        self.nbrReduces = len(self.reduceDirs)
+        self.reduceDir = args[2]      
+        self.nbrReduces = int(args[3])
         
         # Used to store the keys and values 
         self.partitionFile = []
         self.partitionList = [[] for _ in range(self.nbrReduces)]
                 
         # user defined map task arguments 
-        self.mapArgs = args[3:]
+        self.mapArgs = args[4:]
     
     def partition(self, key):
         """ 
@@ -60,19 +60,18 @@ class Mapper:
         for i in range(0, self.nbrReduces): 
             self.partitionFile[i].close()
         
-        for i in range(0, self.nbrReduces):    
-            fname =   self.chunkFile + "-sorted-map-partition-" + str(i)     
-            scp_cmd = "scp -r %s %s" %(fname, self.reduceDirs[i])
-            print "Moving output file via cmd : %s" % scp_cmd
-            ret=os.system(scp_cmd)
-            if ret == 0:
-                print "File successfully transferred"
-                try:
-                    os.remove(fname)
-                except:
-                    pass
-            else:
-                print "File transfer failed"
+        fname =   self.chunkFile + "-sorted-map-partition-*"      
+        scp_cmd = "scp -r %s %s" %(fname, self.reduceDir)
+        print "Moving output file via cmd : %s" % scp_cmd
+        ret=os.system(scp_cmd)
+        if ret == 0:
+            print "File successfully transferred"
+            """try:
+                os.remove(fname)
+            except:
+                pass"""
+        else:
+            print "File transfer failed"
             
              
             
