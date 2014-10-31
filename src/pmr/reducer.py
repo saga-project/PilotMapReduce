@@ -33,13 +33,16 @@ class Reducer:
         self.reduceWrite.close() 
            
         for fname in self.reduceOutFiles:    
-            scp_cmd = "scp -r %s %s" %(fname, self.outputDir)
-            print "Moving output file via cmd : %s" % scp_cmd
-            ret=os.system(scp_cmd)
+            if "localhost" in self.outputDir:
+                transfer_cmd = "ln -s %s/%s %s" %(os.getcwd(),fname, self.outputDir.split(":")[1])
+            else:
+                transfer_cmd = "scp -r %s %s" %(fname, self.outputDir)
+            print "Moving output file via cmd : %s" % transfer_cmd
+            ret=os.system(transfer_cmd)
             if ret == 0:
                 print "File successfully transferred"
                 try:
-                    os.remove(fname)
+                    os.system("rm -fr %" % fname)
                 except:
                     pass
             else:

@@ -60,16 +60,20 @@ class Mapper:
         for i in range(0, self.nbrReduces): 
             self.partitionFile[i].close()
         
-        fname =   self.chunkFile + "-sorted-map-partition-*"      
-        scp_cmd = "scp -r %s %s" %(fname, self.reduceDir)
-        print "Moving output file via cmd : %s" % scp_cmd
-        ret=os.system(scp_cmd)
+        fname =   self.chunkFile + "-sorted-map-partition-*"              
+        if "localhost" in self.reduceDir:
+            transfer_cmd = "ln -s %s/%s %s" %(os.getcwd(),fname, self.reduceDir.split(":")[1])
+        else:
+            transfer_cmd = "scp -r %s %s" %(fname, self.reduceDir)
+        print "Moving output file via cmd : %s" % transfer_cmd
+        ret=os.system(transfer_cmd)
+
         if ret == 0:
             print "File successfully transferred"
-            """try:
-                os.remove(fname)
+            try:
+                os.system("rm -fr %" % fname)
             except:
-                pass"""
+                pass
         else:
             print "File transfer failed"
             
