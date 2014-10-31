@@ -41,24 +41,16 @@ class Mapper:
     def finalize(self):
         """ Prepare the map output files 
             sort the map output contents """
-
-        # open partition file for each reduce            
-        for i in range(0, self.nbrReduces):
-            partitionName = "partition-" + str(i) 
-            self.partitionFile.append(open(self.chunkFile + "-sorted-map-" + partitionName, 'w'))
-
-        # sort each partition  list and write to file
-        for i in range(0, self.nbrReduces):
-            self.partitionList[i].sort()
-            for line in self.partitionList[i]:
-                self.partitionFile[i].write(str(line) + "\n")
-        
-        # close all partition files
-        for i in range(0, self.nbrReduces): 
-            self.partitionFile[i].close()
-
-        for i in range(0, self.nbrReduces): 
-            self.partitionFile[i].close()
+            
+        i=0    
+        for partition in self.partitionList:
+            if len(partition) > 0:
+                partitionName = "partition-" + str(i)
+                partition.sort()
+                f=open(self.chunkFile + "-sorted-map-" + partitionName, 'w')
+                f.writelines("%s\n" % item for item in partition)
+                f.close()
+            i=i+1
         
         fname =   self.chunkFile + "-sorted-map-partition-*"              
         if "localhost" in self.reduceDir:
