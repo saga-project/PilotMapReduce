@@ -304,19 +304,11 @@ class MapReduce(object):
         reduceArgs = self._reduceDesc.get('arguments', []) 
         
         rtemp=[]
-        for rdu in self.reduceDus:
-            mapOutPath=os.path.join(self.pdUrl.path,rdu.get_url().split(":")[-1])
-            rduFiles = [os.path.join(mapOutPath,f) for f in os.listdir(mapOutPath)]                
-            rdu.add_files(rduFiles, exists=True)
-            rtemp.append(rdu)
-        util.waitDUs(rtemp)
-        
-                        
-        rdu = self.reduceDus[0]       
+        rdu = self.reduceDus[0]
+        mapOutPath=os.path.join(self.pdUrl.path,rdu.get_url().split(":")[-1])                                
         try:
             for reduce in range(self._nbrReduces):                
-                reduceTask = util.setAffinity(copy.copy(self._reduceDesc), rdu.data_unit_description)
-                reduceTask['input_data'] = [{ rdu.get_url(): ['*-'+str(reduce)] }]
+                reduceTask = util.setAffinity(copy.copy(self._reduceDesc), rdu.data_unit_description)                
                 reduceFiles = []                
                                 
                 if self._iterOutputPrefixes:                    
@@ -324,12 +316,10 @@ class MapReduce(object):
                         reduceFiles.append(pref+"*")
                 else:
                     reduceFiles.append('reduce-*')
-
-                reduceTask['arguments'] = [outputDir, ",".join(reduceFiles)] + reduceArgs
-
+                reduceTask['arguments'] = [reduce, mapOutPath, outputDir, ",".join(reduceFiles)] + reduceArgs
                     
                 if self._reduceExe is not None:
-                    reduceTask["input_data"].append(self._reduceExe.get_url())                    
+                    reduceTask["input_data"]=[self._reduceExe.get_url()]                    
                 reduceCUs.append(self.compute_data_service.submit_compute_unit(reduceTask))
                
             # Wait for the map DUS and CUS 

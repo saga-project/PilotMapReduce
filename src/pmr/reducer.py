@@ -12,13 +12,24 @@ class Reducer:
             as command line parameters.
             
         """
-        self.partitionFiles=glob.glob("*-sorted-map-partition-*")            
-        self.reduce=str(self.partitionFiles[0].split("-")[-1])
+                    
+        self.reduce=args[1]
+        self.inputDir = args[2]
+        for fname in glob.glob("%s/*-sorted-map-partition-%s" % (self.inputDir,self.reduce)):
+            transfer_cmd = "ln -s %s" % fname
+            print "Moving partition file via cmd : %s" % transfer_cmd
+            ret=os.system(transfer_cmd)
+            if ret == 0:
+                print "File successfully transferred"
+            else:
+                 print "File transfer failed"             
+            
         reduceFile="reduce-"+str(self.reduce)
-        self.outputDir = args[1]
-        self.reduceOutFiles = args[2].split(",")
-        self.reduceArgs = args[3:]
-        self.reduceWrite=open(reduceFile, 'w')   
+        self.outputDir = args[3]
+        self.reduceOutFiles = args[4].split(",")
+        self.reduceArgs = args[5:]
+        self.reduceWrite=open(reduceFile, 'w')
+        self.partitionFiles=glob.glob("*-sorted-map-partition-*")   
     
     def emit(self, key, value):
         """ Emit the key value pair to reduce file """
